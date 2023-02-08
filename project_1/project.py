@@ -6,97 +6,157 @@ CIS 476/566 Software Architecture and Design patterns
 import os
 
 
-class AbstractFactory:
-    def create_phone(self):
+class AbstractDevice():
+    def create_display(self):
         pass
 
-    def create_watch(self):
+    def create_battery(self):
         pass
 
-    def create_laptop(self):
-        pass
-
-    def create_tablet(self):
+    def create_processor(self):
         pass
 
 
+class Smartphone(AbstractDevice):
+    def create_display(self):
+        return SmartphoneDisplay()
 
-class ConcreteFactory1(AbstractFactory):
-    def create_product_a(self):
-        return ProductA1()
+    def create_battery(self):
+        return SmartphoneBattery()
 
-    def create_product_b(self):
-        return ProductB1()
-
-
-class ConcreteFactory2(AbstractFactory):
-    def create_product_a(self):
-        return ProductA2()
-
-    def create_product_b(self):
-        return ProductB2()
+    def create_processor(self):
+        return SmartphoneProcessor()
 
 
+class Tablet(AbstractDevice):
+    def create_display(self):
+        return TabletDisplay()
 
-class ProductA:
-    def feature(self):
+    def create_battery(self):
+        return TabletBattery()
+
+    def create_processor(self):
+        return TabletProcessor()
+
+
+class Laptop(AbstractDevice):
+    def create_display(self):
+        return LaptopDisplay()
+
+    def create_battery(self):
+        return LaptopBattery()
+
+    def create_processor(self):
+        return LaptopProcessor()
+
+
+class Smartwatch(AbstractDevice):
+    def create_display(self):
+        return SmartwatchDisplay()
+
+    def create_battery(self):
+        return SmartwatchBattery()
+
+    def create_processor(self):
+        return SmartwatchProcessor()
+
+
+class AbstractDisplay():
+    def display_test(self):
         pass
 
 
-
-class ProductA1(ProductA):
-    def feature(self):
-        return "Feature of Product A1"
-
+class SmartphoneDisplay(AbstractDisplay):
+    def display_test(self):
+        return "Running Smartphone Display Test..."
 
 
-class ProductA2(ProductA):
-    def feature(self):
-        return "Feature of Product A2"
+class TabletDisplay(AbstractDisplay):
+    def display_test(self):
+        return "Running Tablet Display Test..."
 
 
+class LaptopDisplay(AbstractDisplay):
+    def display_test(self):
+        return "Running Laptop Display Test..."
 
-class ProductB:
-    def feature(self):
+
+class SmartwatchDisplay(AbstractDisplay):
+    def display_test(self):
+        return "Running Smartwatch Display Test..."
+
+
+class AbstractBattery():
+    def battery_test(self):
         pass
 
 
-
-class ProductB1(ProductB):
-    def feature(self):
-        return "Feature of Product B1"
-
+class SmartphoneBattery(AbstractBattery):
+    def battery_test(self):
+        return "Running Smartphone Battery Test..."
 
 
-class ProductB2(ProductB):
-    def feature(self):
-        return "Feature of Product B2"
+class TabletBattery(AbstractBattery):
+    def battery_test(self):
+        return "Running Tablet Battery Test..."
 
 
+class LaptopBattery(AbstractBattery):
+    def battery_test(self):
+        return "Running Laptop Battery Test..."
 
-class RunTest:
+
+class SmartwatchBattery(AbstractBattery):
+    def battery_test(self):
+        return "Running Smartwatch Battery Test..."
+
+
+class AbstractProcessor():
+    def processor_test(self):
+        pass
+
+
+class SmartphoneProcessor(AbstractProcessor):
+    def processor_test(self):
+        return "Running Smartphone Processor Test..."
+
+
+class TabletProcessor(AbstractProcessor):
+    def processor_test(self):
+        return "Running Tablet Processor Test..."
+
+
+class LaptopProcessor(AbstractProcessor):
+    def processor_test(self):
+        return "Running Laptop Processor Test..."
+
+
+class SmartwatchProcessor(AbstractProcessor):
+    def processor_test(self):
+        return "Running Smartwatch"
+
+
+class Test:
     def __init__(self):
         self.devices = None
+        self.run_test()
 
-        self.read_data()
-
-    def read_data(self):
+    def run_test(self):
 
         root = os.path.dirname(os.path.abspath(__file__))
         with open('{0}/devices.txt'.format(root), 'r') as file:
             self.devices = file.read().split('\n')
 
-        print self.devices
-
-
-def main():
-    for factory in (ConcreteFactory1(), ConcreteFactory2()):
-        product_a = factory.create_product_a()
-        product_b = factory.create_product_b()
-        print(product_a.feature(), product_b.feature())
+        for class_name in self.devices:
+            print '>> Current device is {}'.format(class_name)
+            device = None
+            device = eval('{}()'.format(class_name))
+            display = device.create_display()
+            battery = device.create_battery()
+            processor = device.create_processor()
+            print("{0}\n{1}\n{2}".format(display.display_test(), battery.battery_test(), processor.processor_test()))
 
 
 if __name__ == "__main__":
 
-    # RunTest()
-    main()
+    Test()
