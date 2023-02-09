@@ -7,4 +7,6 @@ Tablet
 Laptop
 Smartwatch
 Smartphone
+Smartphone
+Tablet
 Tablet

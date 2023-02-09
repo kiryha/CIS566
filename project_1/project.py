@@ -17,7 +17,16 @@ class AbstractDevice():
         pass
 
 
-class Smartphone(AbstractDevice):
+class Smartphone(AbstractDevice, object):
+    _instance = []
+
+    def __new__(cls):
+        if len(cls._instance) >= 2:
+            raise ValueError("WARNING! There can be at most 2 instances of Smartphone!")
+        instance = super(Smartphone, cls).__new__(cls)
+        cls._instance.append(instance)
+        return instance
+
     def create_display(self):
         return SmartphoneDisplay()
 
@@ -28,7 +37,16 @@ class Smartphone(AbstractDevice):
         return SmartphoneProcessor()
 
 
-class Tablet(AbstractDevice):
+class Tablet(AbstractDevice, object):
+    _instance = []
+
+    def __new__(cls):
+        if len(cls._instance) >= 2:
+            raise ValueError("WARNING! There can be at most 2 instances of Tablet!")
+        instance = super(Tablet, cls).__new__(cls)
+        cls._instance.append(instance)
+        return instance
+
     def create_display(self):
         return TabletDisplay()
 
@@ -39,7 +57,16 @@ class Tablet(AbstractDevice):
         return TabletProcessor()
 
 
-class Laptop(AbstractDevice):
+class Laptop(AbstractDevice, object):
+    _instance = []
+
+    def __new__(cls):
+        if len(cls._instance) >= 2:
+            raise ValueError("WARNING! There can be at most 2 instances of Laptop!")
+        instance = super(Laptop, cls).__new__(cls)
+        cls._instance.append(instance)
+        return instance
+
     def create_display(self):
         return LaptopDisplay()
 
@@ -50,7 +77,16 @@ class Laptop(AbstractDevice):
         return LaptopProcessor()
 
 
-class Smartwatch(AbstractDevice):
+class Smartwatch(AbstractDevice, object):
+    _instance = []
+
+    def __new__(cls):
+        if len(cls._instance) >= 2:
+            raise ValueError("WARNING! There can be at most 2 instances of Smartwatch!")
+        instance = super(Smartwatch, cls).__new__(cls)
+        cls._instance.append(instance)
+        return instance
+
     def create_display(self):
         return SmartwatchDisplay()
 
@@ -150,11 +186,15 @@ class Test:
         for class_name in self.devices:
             print '>> Current device is {}'.format(class_name)
             device = None
-            device = eval('{}()'.format(class_name))
-            display = device.create_display()
-            battery = device.create_battery()
-            processor = device.create_processor()
-            print("{0}\n{1}\n{2}".format(display.display_test(), battery.battery_test(), processor.processor_test()))
+
+            try:
+                device = eval('{}()'.format(class_name))
+                display = device.create_display()
+                battery = device.create_battery()
+                processor = device.create_processor()
+                print("{0}\n{1}\n{2}".format(display.display_test(), battery.battery_test(), processor.processor_test()))
+            except ValueError as e:
+                print(e)
 
 
 if __name__ == "__main__":
