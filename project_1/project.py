@@ -1,6 +1,9 @@
 """
 Class Project 1
 CIS 476/566 Software Architecture and Design patterns
+
+Kyrylo Krysko
+coder@umich.edu
 """
 
 import os
