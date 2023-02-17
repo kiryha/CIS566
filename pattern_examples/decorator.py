@@ -84,7 +84,7 @@ beverage = Coffee()
 beverage = Sugar(beverage)
 beverage = Milk(beverage)
 
-print (beverage.get_description() + " = $" + str(beverage.cost()))
+print(beverage.get_description() + " = $" + str(beverage.cost()))
 
 # Coffee + Sugar + Milk = $3.5
 

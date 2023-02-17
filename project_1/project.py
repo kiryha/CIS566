@@ -187,7 +187,7 @@ class Test:
             self.devices = file.read().split('\n')
 
         for class_name in self.devices:
-            print '>> Current device is {}'.format(class_name)
+            print('>> Current device is {}'.format(class_name))
             device = None
 
             try:
