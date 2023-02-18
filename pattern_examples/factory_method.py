@@ -76,25 +76,27 @@ class PepperoniPizza(Pizza):
         return "Pepperoni Pizza"
 
 
-class PizzaFactory:
+class PizzaStore:
+    def create_pizza(self, pizza_type):
+        raise NotImplementedError()
+
+    def order_pizza(self, pizza_type):
+
+        pizza = self.create_pizza(pizza_type)
+        pizza.prepare()
+        pizza.box()
+
+        return pizza
+
+
+class NYPizzaStore(PizzaStore):
     def create_pizza(self, pizza_type):
         if pizza_type == "cheese":
             return CheesePizza()
         elif pizza_type == "pepperoni":
             return PepperoniPizza()
-        else:
-            raise ValueError(f"Unknown pizza type '{pizza_type}'.")
 
 
-class PizzaStore(PizzaFactory):
-    def order_pizza(self, pizza_type):
-        pizza = PizzaFactory().create_pizza(pizza_type)
-        pizza.prepare()
-        pizza.box()
-        print(f"Here's your {pizza}! Enjoy!")
-        return pizza
-
-
-store = PizzaStore()
-cheese_pizza = store.order_pizza("cheese")
-pepperoni_pizza = store.order_pizza("pepperoni")
+ny_store = NYPizzaStore()
+cheese_pizza = ny_store.order_pizza("cheese")
+pepperoni_pizza = ny_store.order_pizza("pepperoni")
