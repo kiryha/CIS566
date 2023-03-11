@@ -47,13 +47,13 @@ def init_database(sql_file_path):
 
 
 class User:
-    def __init__(self):
+    def __init__(self, user_tuple):
         self.id = None
-        self.first_name = ''
-        self.last_name = ''
-        self.email = ''
-        self.password = ''
-        self.description = ''
+        self.first_name = user_tuple[1]
+        self.last_name = user_tuple[2]
+        self.email = user_tuple[3]
+        self.password = user_tuple[4]
+        self.description = user_tuple[5]
 
 
 class Group:
@@ -83,7 +83,20 @@ class Database:
     def __init__(self, sql_file_path):
         self.sql_file_path = sql_file_path
 
-    def add_user(self, user_name, user_last_name, user_email, user_password):
+    # Tuple to object conversion
+    def convert_to_user(self, user_tuples):
+
+        users = []
+
+        for user_tuple in user_tuples:
+            user = User(user_tuple)
+            users.append(user)
+
+        return users
+
+    def add_user(self, user_tuple):
+
+        user = User(user_tuple)
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -98,18 +111,18 @@ class Database:
                        ":description)",
 
                        {'id': cursor.lastrowid,
-                        'first_name': user_name,
-                        'last_name': user_last_name,
-                        'email': user_email,
-                        'password': user_password,
-                        'description': ''})
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'email': user.email,
+                        'password': user.password,
+                        'description': user.description})
 
         connection.commit()
-        # user.id = cursor.lastrowid  # Add database ID to the object
+        user.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
 
         # print 'User {0} {1} added!'.format(user.first_name, user.last_name)
-        # return user
+        return user
 
     def add_group(self, group_name):
 
@@ -240,14 +253,16 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
     def sign_up_user(self):
 
-        user_name = self.linSignupName.text()
+        user_first_name = self.linSignupName.text()
         user_last_name = self.linSignupLastName.text()
         user_email = self.linSignupEmail.text()
         user_password = self.linSignupPassword.text()
 
-        print(f'Signing Up User {user_name} {user_last_name}...')
+        print(f'Signing Up User {user_first_name} {user_last_name}...')
 
-        self.database.add_user(user_name, user_last_name, user_email, user_password)
+        user_tuple = [None, user_first_name, user_last_name, user_email, user_password, '']
+        
+        self.database.add_user(user_tuple)
 
     def create_group(self):
 
