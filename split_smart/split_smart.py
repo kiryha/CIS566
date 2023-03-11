@@ -18,7 +18,7 @@ def init_database(sql_file_path):
     connection = sqlite3.connect(sql_file_path)
     cursor = connection.cursor()
 
-    cursor.execute('''CREATE TABLE user (
+    cursor.execute('''CREATE TABLE "user" (
                     id integer primary key autoincrement,
                     first_name text,
                     last_name text,
@@ -27,20 +27,19 @@ def init_database(sql_file_path):
                     description text
                     )''')
 
-    cursor.execute('''CREATE TABLE _group (
+    cursor.execute('''CREATE TABLE "group" (
                     id integer primary key autoincrement,
-                    name text,
                     description text
                     )''')
 
-    # cursor.execute('''CREATE TABLE user_group (
-    #                 id integer primary key autoincrement,
-    #                 user_id integer,
-    #                 group_id integer,
-    #                 description text,
-    #                 FOREIGN KEY(user_id) REFERENCES user(id)
-    #                 FOREIGN KEY(group_id) REFERENCES group(id)
-    #                 )''')
+    cursor.execute('''CREATE TABLE "user_group" (
+                    id integer primary key autoincrement,
+                    user_id integer,
+                    group_id integer,
+                    description text,
+                    FOREIGN KEY(user_id) REFERENCES "user"(id),
+                    FOREIGN KEY(group_id) REFERENCES "group"(id)
+                    )''')
 
     connection.commit()
     connection.close()

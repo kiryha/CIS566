@@ -1,3 +1,4 @@
 # Skip PyCharm
 .idea
 __pycache__
+split_smart/database/data.db
