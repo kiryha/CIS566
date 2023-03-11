@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'split_smart_main.ui'
+## Form generated from reading UI file 'ui_main.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -29,11 +29,11 @@ class Ui_SplitSmart(object):
 
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.verticalLayout_2 = QVBoxLayout(self.tab)
+        self.tab_1 = QWidget()
+        self.tab_1.setObjectName(u"tab_1")
+        self.verticalLayout_2 = QVBoxLayout(self.tab_1)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.splitter_5 = QSplitter(self.tab)
+        self.splitter_5 = QSplitter(self.tab_1)
         self.splitter_5.setObjectName(u"splitter_5")
         self.splitter_5.setOrientation(Qt.Horizontal)
         self.label_5 = QLabel(self.splitter_5)
@@ -47,7 +47,7 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addWidget(self.splitter_5)
 
-        self.splitter_6 = QSplitter(self.tab)
+        self.splitter_6 = QSplitter(self.tab_1)
         self.splitter_6.setObjectName(u"splitter_6")
         self.splitter_6.setOrientation(Qt.Horizontal)
         self.label_6 = QLabel(self.splitter_6)
@@ -61,7 +61,7 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addWidget(self.splitter_6)
 
-        self.splitter_4 = QSplitter(self.tab)
+        self.splitter_4 = QSplitter(self.tab_1)
         self.splitter_4.setObjectName(u"splitter_4")
         self.splitter_4.setOrientation(Qt.Horizontal)
         self.label_4 = QLabel(self.splitter_4)
@@ -75,7 +75,7 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addWidget(self.splitter_4)
 
-        self.splitter_3 = QSplitter(self.tab)
+        self.splitter_3 = QSplitter(self.tab_1)
         self.splitter_3.setObjectName(u"splitter_3")
         self.splitter_3.setOrientation(Qt.Horizontal)
         self.label_3 = QLabel(self.splitter_3)
@@ -89,20 +89,20 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addWidget(self.splitter_3)
 
-        self.btnSignUp = QPushButton(self.tab)
+        self.btnSignUp = QPushButton(self.tab_1)
         self.btnSignUp.setObjectName(u"btnSignUp")
         self.btnSignUp.setMinimumSize(QSize(0, 35))
 
         self.verticalLayout_2.addWidget(self.btnSignUp)
 
-        self.line = QFrame(self.tab)
+        self.line = QFrame(self.tab_1)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.HLine)
         self.line.setFrameShadow(QFrame.Sunken)
 
         self.verticalLayout_2.addWidget(self.line)
 
-        self.splitter = QSplitter(self.tab)
+        self.splitter = QSplitter(self.tab_1)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Horizontal)
         self.label = QLabel(self.splitter)
@@ -116,7 +116,7 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addWidget(self.splitter)
 
-        self.splitter_2 = QSplitter(self.tab)
+        self.splitter_2 = QSplitter(self.tab_1)
         self.splitter_2.setObjectName(u"splitter_2")
         self.splitter_2.setOrientation(Qt.Horizontal)
         self.label_2 = QLabel(self.splitter_2)
@@ -130,7 +130,7 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addWidget(self.splitter_2)
 
-        self.btnLogIn = QPushButton(self.tab)
+        self.btnLogIn = QPushButton(self.tab_1)
         self.btnLogIn.setObjectName(u"btnLogIn")
         self.btnLogIn.setMinimumSize(QSize(0, 35))
 
@@ -140,9 +140,53 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
-        self.tabWidget.addTab(self.tab, "")
+        self.tabWidget.addTab(self.tab_1, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
+        self.verticalLayout_3 = QVBoxLayout(self.tab_2)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.splitter_7 = QSplitter(self.tab_2)
+        self.splitter_7.setObjectName(u"splitter_7")
+        self.splitter_7.setOrientation(Qt.Horizontal)
+        self.label_7 = QLabel(self.splitter_7)
+        self.label_7.setObjectName(u"label_7")
+        self.label_7.setMinimumSize(QSize(80, 0))
+        self.label_7.setMaximumSize(QSize(80, 16777215))
+        self.splitter_7.addWidget(self.label_7)
+        self.linGroupName = QLineEdit(self.splitter_7)
+        self.linGroupName.setObjectName(u"linGroupName")
+        self.splitter_7.addWidget(self.linGroupName)
+
+        self.verticalLayout_3.addWidget(self.splitter_7)
+
+        self.btnCreateGroup = QPushButton(self.tab_2)
+        self.btnCreateGroup.setObjectName(u"btnCreateGroup")
+        self.btnCreateGroup.setMinimumSize(QSize(0, 35))
+
+        self.verticalLayout_3.addWidget(self.btnCreateGroup)
+
+        self.line_2 = QFrame(self.tab_2)
+        self.line_2.setObjectName(u"line_2")
+        self.line_2.setFrameShape(QFrame.HLine)
+        self.line_2.setFrameShadow(QFrame.Sunken)
+
+        self.verticalLayout_3.addWidget(self.line_2)
+
+        self.comGroups = QComboBox(self.tab_2)
+        self.comGroups.setObjectName(u"comGroups")
+
+        self.verticalLayout_3.addWidget(self.comGroups)
+
+        self.btnManageGroupUsers = QPushButton(self.tab_2)
+        self.btnManageGroupUsers.setObjectName(u"btnManageGroupUsers")
+        self.btnManageGroupUsers.setMinimumSize(QSize(0, 35))
+
+        self.verticalLayout_3.addWidget(self.btnManageGroupUsers)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer_2)
+
         self.tabWidget.addTab(self.tab_2, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
@@ -158,6 +202,9 @@ class Ui_SplitSmart(object):
 
         self.retranslateUi(SplitSmart)
 
+        self.tabWidget.setCurrentIndex(1)
+
+
         QMetaObject.connectSlotsByName(SplitSmart)
     # setupUi
 
@@ -172,7 +219,10 @@ class Ui_SplitSmart(object):
         self.label.setText(QCoreApplication.translate("SplitSmart", u"Email", None))
         self.label_2.setText(QCoreApplication.translate("SplitSmart", u"Password", None))
         self.btnLogIn.setText(QCoreApplication.translate("SplitSmart", u"Log In", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("SplitSmart", u"Login / Sign Up", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("SplitSmart", u"Tab 2", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QCoreApplication.translate("SplitSmart", u"Login / Sign Up", None))
+        self.label_7.setText(QCoreApplication.translate("SplitSmart", u"Group Name", None))
+        self.btnCreateGroup.setText(QCoreApplication.translate("SplitSmart", u"Create Group", None))
+        self.btnManageGroupUsers.setText(QCoreApplication.translate("SplitSmart", u"Manage Group Users", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("SplitSmart", u"Groups", None))
     # retranslateUi
 

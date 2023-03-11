@@ -4,8 +4,9 @@ CIS 566 Term Project: Split Smart - share expenses
 
 import os
 import sqlite3
-from PySide2 import QtWidgets, QtGui
-from ui import split_smart_main
+from PySide2 import QtWidgets, QtCore, QtGui
+from ui import ui_main
+from ui import ui_groups
 
 
 # Database
@@ -26,6 +27,21 @@ def init_database(sql_file_path):
                     description text
                     )''')
 
+    cursor.execute('''CREATE TABLE _group (
+                    id integer primary key autoincrement,
+                    name text,
+                    description text
+                    )''')
+
+    # cursor.execute('''CREATE TABLE user_group (
+    #                 id integer primary key autoincrement,
+    #                 user_id integer,
+    #                 group_id integer,
+    #                 description text,
+    #                 FOREIGN KEY(user_id) REFERENCES user(id)
+    #                 FOREIGN KEY(group_id) REFERENCES group(id)
+    #                 )''')
+
     connection.commit()
     connection.close()
 
@@ -37,6 +53,29 @@ class User:
         self.last_name = ''
         self.email = ''
         self.password = ''
+        self.description = ''
+
+
+class Group:
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.description = ''
+
+
+class UserGroup:
+    def __init__(self):
+        self.id = None
+        self.user_id = None
+        self.group_id = None
+        self.description = ''
+
+
+class Balance:
+    def __init__(self):
+        self.id = None
+        self.balance = None
+        self.user_id = ''
         self.description = ''
 
 
@@ -73,7 +112,51 @@ class Database:
         # return user
 
 
-class SplitSmart(QtWidgets.QMainWindow, split_smart_main.Ui_SplitSmart):
+# Data Models
+class ListModel(QtCore.QAbstractListModel):
+    def __init__(self, data, parent=None):
+        QtCore.QAbstractListModel.__init__(self, parent)
+        self._data = data
+
+    def rowCount(self, parent):
+
+        return len(self._data)
+
+    def data(self, index, role):
+
+        if not index.isValid():
+            return
+
+        # Get selected row
+        row_index = index.row()
+        data = self._data[row_index]
+
+        if role == QtCore.Qt.DisplayRole:  # Display name in UI
+            return data.name
+        # if role == QtCore.Qt.UserRole + 1:  # Return ID
+        #     return data.id
+        # if role == QtCore.Qt.UserRole + 2:  # Return NAME
+        #     return data.name
+        # if role == QtCore.Qt.UserRole + 3:  # Return PATH
+        #     return data.path
+
+
+class GroupManager(QtWidgets.QDialog, ui_groups.Ui_GroupManager):
+    def __init__(self, parent=None):
+        super(GroupManager, self).__init__(parent=parent)
+        self.setupUi(self)
+        self.parent = parent
+
+        self.model_groups = None
+        self.model_users = None
+
+    def showEvent(self, event):
+
+        self.lisGroups.setModel(self.model_groups)
+        self.lisUsers.setModel(self.model_users)
+
+
+class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     def __init__(self):
         super(SplitSmart, self).__init__()
         self.setupUi(self)
@@ -82,7 +165,11 @@ class SplitSmart(QtWidgets.QMainWindow, split_smart_main.Ui_SplitSmart):
         self.init_database()
         self.database = Database(self.sql_file_path)
 
+        self.group_manager = GroupManager(self)
+
         self.btnSignUp.clicked.connect(self.sign_up_user)
+        self.btnManageGroupUsers.clicked.connect(self.manage_groups)
+
         self.btnSplitSmart.clicked.connect(self.test)
 
     def init_database(self):
@@ -100,6 +187,13 @@ class SplitSmart(QtWidgets.QMainWindow, split_smart_main.Ui_SplitSmart):
         print(f'Signing Up User {user_name} {user_last_name}...')
 
         self.database.add_user(user_name, user_last_name, user_email, user_password)
+
+    def manage_groups(self):
+
+        self.group_manager.model_groups = ListModel([])
+        self.group_manager.model_users = ListModel([])
+
+        self.group_manager.exec_()
 
     def test(self):
 
