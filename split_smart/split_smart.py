@@ -29,6 +29,7 @@ def init_database(sql_file_path):
 
     cursor.execute('''CREATE TABLE "group" (
                     id integer primary key autoincrement,
+                    name text,
                     description text
                     )''')
 
@@ -88,7 +89,7 @@ class Database:
         cursor = connection.cursor()
 
         # Add object to DB
-        cursor.execute("INSERT INTO user VALUES ("
+        cursor.execute("INSERT INTO 'user' VALUES ("
                        ":id,"
                        ":first_name,"
                        ":last_name,"
@@ -109,6 +110,59 @@ class Database:
 
         # print 'User {0} {1} added!'.format(user.first_name, user.last_name)
         # return user
+
+    def add_group(self, group_name):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        # Add object to DB
+        cursor.execute("INSERT INTO 'group' VALUES ("
+                       ":id,"
+                       ":name,"
+                       ":description)",
+
+                       {'id': cursor.lastrowid,
+                        'name': group_name,
+                        'description': ''})
+
+        connection.commit()
+        connection.close()
+
+    def get_groups(self):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'group'")
+        group_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        print(group_tuples)
+
+        return group_tuples
+
+    def add_user_to_group(self, user_id, group_id):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        # Add object to DB
+        cursor.execute("INSERT INTO 'user_group' VALUES ("
+                       ":id,"
+                       ":user_id,"
+                       ":group_id,"
+                       ":description)",
+
+                       {'id': cursor.lastrowid,
+                        'user_id': user_id,
+                        'group_id': group_id,
+                        'description': ''})
+
+        connection.commit()
+        connection.close()
 
 
 # Data Models
@@ -164,9 +218,12 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.init_database()
         self.database = Database(self.sql_file_path)
 
+        self.init_ui()
+
         self.group_manager = GroupManager(self)
 
         self.btnSignUp.clicked.connect(self.sign_up_user)
+        self.btnCreateGroup.clicked.connect(self.create_group)
         self.btnManageGroupUsers.clicked.connect(self.manage_groups)
 
         self.btnSplitSmart.clicked.connect(self.test)
@@ -175,6 +232,11 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         if not os.path.exists(self.sql_file_path):
             init_database(self.sql_file_path)
+
+    def init_ui(self):
+
+        groups = self.database.get_groups()
+        # self.comGroups.addItems()
 
     def sign_up_user(self):
 
@@ -186,6 +248,11 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         print(f'Signing Up User {user_name} {user_last_name}...')
 
         self.database.add_user(user_name, user_last_name, user_email, user_password)
+
+    def create_group(self):
+
+        group_name = self.linGroupName.text()
+        self.database.add_group(group_name)
 
     def manage_groups(self):
 
