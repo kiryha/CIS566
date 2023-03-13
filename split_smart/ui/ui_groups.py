@@ -20,20 +20,20 @@ class Ui_GroupManager(object):
         GroupManager.resize(271, 568)
         self.verticalLayout = QVBoxLayout(GroupManager)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.label = QLabel(GroupManager)
-        self.label.setObjectName(u"label")
+        self.labGroupName = QLabel(GroupManager)
+        self.labGroupName.setObjectName(u"labGroupName")
 
-        self.verticalLayout.addWidget(self.label)
+        self.verticalLayout.addWidget(self.labGroupName)
 
         self.label_2 = QLabel(GroupManager)
         self.label_2.setObjectName(u"label_2")
 
         self.verticalLayout.addWidget(self.label_2)
 
-        self.lisGroups = QListView(GroupManager)
-        self.lisGroups.setObjectName(u"lisGroups")
+        self.lisGroupMembers = QListView(GroupManager)
+        self.lisGroupMembers.setObjectName(u"lisGroupMembers")
 
-        self.verticalLayout.addWidget(self.lisGroups)
+        self.verticalLayout.addWidget(self.lisGroupMembers)
 
         self.pushButton_2 = QPushButton(GroupManager)
         self.pushButton_2.setObjectName(u"pushButton_2")
@@ -65,7 +65,7 @@ class Ui_GroupManager(object):
 
     def retranslateUi(self, GroupManager):
         GroupManager.setWindowTitle(QCoreApplication.translate("GroupManager", u"Manage Group Users", None))
-        self.label.setText(QCoreApplication.translate("GroupManager", u"Group Name:", None))
+        self.labGroupName.setText(QCoreApplication.translate("GroupManager", u"Group Name:", None))
         self.label_2.setText(QCoreApplication.translate("GroupManager", u"Group Members", None))
         self.pushButton_2.setText(QCoreApplication.translate("GroupManager", u"Remove Selected Users", None))
         self.label_3.setText(QCoreApplication.translate("GroupManager", u"Users", None))

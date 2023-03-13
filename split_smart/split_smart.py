@@ -46,9 +46,84 @@ def init_database(sql_file_path):
     connection.close()
 
 
+def populate_database(sql_file_path):
+
+    populate_data = {
+        'users': [
+            {'id': 1,
+             'first_name': 'Kiryha',
+             'last_name': 'Krysko',
+             'email': 'coder@umich.edu',
+             'password': '123',
+             'description': ''},
+
+            {'id': 2,
+             'first_name': 'Yulia',
+             'last_name': 'Basko',
+             'email': 'jbasko@umich.edu',
+             'password': 'sonechko',
+             'description': ''},
+
+            {'id': 3,
+             'first_name': 'Rodriges',
+             'last_name': 'Bender',
+             'email': 'bender@umich.edu',
+             'password': 'futurama',
+             'description': ''}],
+
+        'groups': [
+            {'id': 1,
+             'name': 'Penoplast',
+             'description': ''},
+
+            {'id': 2,
+             'name': 'Booze',
+             'description': ''}]}
+
+    for user_data in populate_data['users']:
+
+        connection = sqlite3.connect(sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("INSERT INTO 'user' VALUES ("
+                       ":id,"
+                       ":first_name,"
+                       ":last_name,"
+                       ":email,"
+                       ":password,"
+                       ":description)",
+
+                       {'id': user_data['id'],
+                        'first_name': user_data['first_name'],
+                        'last_name': user_data['last_name'],
+                        'email': user_data['email'],
+                        'password': user_data['password'],
+                        'description': ''})
+
+        connection.commit()
+        connection.close()
+
+    for group_data in populate_data['groups']:
+
+        connection = sqlite3.connect(sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("INSERT INTO 'group' VALUES ("
+                       ":id,"
+                       ":name,"
+                       ":description)",
+
+                       {'id': group_data['id'],
+                        'name': group_data['name'],
+                        'description': ''})
+
+        connection.commit()
+        connection.close()
+
+
 class User:
     def __init__(self, user_tuple):
-        self.id = None
+        self.id = user_tuple[0]
         self.first_name = user_tuple[1]
         self.last_name = user_tuple[2]
         self.email = user_tuple[3]
@@ -57,10 +132,10 @@ class User:
 
 
 class Group:
-    def __init__(self):
-        self.id = None
-        self.name = None
-        self.description = ''
+    def __init__(self, group_tuple):
+        self.id = group_tuple[0]
+        self.name = group_tuple[1]
+        self.description = group_tuple[2]
 
 
 class UserGroup:
@@ -82,6 +157,14 @@ class Balance:
 class Database:
     def __init__(self, sql_file_path):
         self.sql_file_path = sql_file_path
+        self.users = []
+        self.groups = []
+
+        self.init_database()
+
+    def init_database(self):
+
+        self.users.extend(self.get_users())
 
     # Tuple to object conversion
     def convert_to_user(self, user_tuples):
@@ -94,6 +177,16 @@ class Database:
 
         return users
 
+    def convert_to_group(self, group_tuples):
+
+        groups = []
+
+        for group_tuple in group_tuples:
+            groups.append(Group(group_tuple))
+
+        return groups
+
+    # CRUD
     def add_user(self, user_tuple):
 
         user = User(user_tuple)
@@ -122,9 +215,27 @@ class Database:
         connection.close()
 
         # print 'User {0} {1} added!'.format(user.first_name, user.last_name)
+        self.users.append(user)
+
         return user
 
-    def add_group(self, group_name):
+    def get_users(self):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'user'")
+        user_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        if user_tuples:
+            return self.convert_to_user(user_tuples)
+
+    def add_group(self, group_tuple):
+
+        group = Group(group_tuple)
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -136,11 +247,16 @@ class Database:
                        ":description)",
 
                        {'id': cursor.lastrowid,
-                        'name': group_name,
+                        'name': group.name,
                         'description': ''})
 
         connection.commit()
+        group.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
+
+        self.groups.append(group)
+
+        return group
 
     def get_groups(self):
 
@@ -153,9 +269,8 @@ class Database:
         connection.commit()
         connection.close()
 
-        print(group_tuples)
-
-        return group_tuples
+        if group_tuples:
+            return self.convert_to_group(group_tuples)
 
     def add_user_to_group(self, user_id, group_id):
 
@@ -180,13 +295,18 @@ class Database:
 
 # Data Models
 class ListModel(QtCore.QAbstractListModel):
-    def __init__(self, data, parent=None):
+    def __init__(self, database, attribute, parent=None):
         QtCore.QAbstractListModel.__init__(self, parent)
-        self._data = data
+        self.database = database
+        self.attribute = attribute
 
     def rowCount(self, parent):
 
-        return len(self._data)
+        if self.attribute == 'groups':
+            return len(self.database.groups)
+
+        if self.attribute == 'users':
+            return len(self.database.users)
 
     def data(self, index, role):
 
@@ -195,10 +315,19 @@ class ListModel(QtCore.QAbstractListModel):
 
         # Get selected row
         row_index = index.row()
-        data = self._data[row_index]
+
+        if self.attribute == 'groups':
+            obj = self.database.groups[row_index]
+        if self.attribute == 'users':
+            obj = self.database.users[row_index]
 
         if role == QtCore.Qt.DisplayRole:  # Display name in UI
-            return data.name
+
+            if self.attribute == 'groups':
+                return obj.name
+            if self.attribute == 'users':
+                return obj.first_name
+
         # if role == QtCore.Qt.UserRole + 1:  # Return ID
         #     return data.id
         # if role == QtCore.Qt.UserRole + 2:  # Return NAME
@@ -218,7 +347,8 @@ class GroupManager(QtWidgets.QDialog, ui_groups.Ui_GroupManager):
 
     def showEvent(self, event):
 
-        self.lisGroups.setModel(self.model_groups)
+        self.lisGroupMembers.setModel(self.model_groups)
+        print(self.model_users)
         self.lisUsers.setModel(self.model_users)
 
 
@@ -245,11 +375,14 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         if not os.path.exists(self.sql_file_path):
             init_database(self.sql_file_path)
+            populate_database(self.sql_file_path)
 
     def init_ui(self):
 
         groups = self.database.get_groups()
-        # self.comGroups.addItems()
+
+        for group in groups:
+            self.comGroups.addItem(group.name)
 
     def sign_up_user(self):
 
@@ -261,18 +394,21 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         print(f'Signing Up User {user_first_name} {user_last_name}...')
 
         user_tuple = [None, user_first_name, user_last_name, user_email, user_password, '']
-        
+
         self.database.add_user(user_tuple)
 
     def create_group(self):
 
         group_name = self.linGroupName.text()
-        self.database.add_group(group_name)
+        group_tuple = [None, group_name, '']
+
+        self.database.add_group(group_tuple)
 
     def manage_groups(self):
 
-        self.group_manager.model_groups = ListModel([])
-        self.group_manager.model_users = ListModel([])
+        group_name = self.comGroups.currentText()
+        self.group_manager.labGroupName.setText(f'Group Name: {group_name}')
+        self.group_manager.model_users = ListModel(self.database, 'users')
 
         self.group_manager.exec_()
 
