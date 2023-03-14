@@ -92,7 +92,23 @@ bid_requests = [
 for request in bid_requests:
     if not standard_handler.handle_bid(request["bid_amount"], request["room_type"]):
         print(f"No handler found for {request['room_type']} room with bid amount of {request['bid_amount']}")
+    else:
+        print(f"Bid request for {request['room_type']} room with bid amount of {request['bid_amount']} accepted.")
 
 # Check if any rooms are still available
 if standard_room.rooms_available == 0 and deluxe_room.rooms_available == 0 and suite_room.rooms_available == 0:
     print("All rooms are booked out.")
+else:
+    print("\nCurrent Available Rooms:")
+    print(standard_room)
+    print(deluxe_room)
+    print(suite_room)
+
+# Example of a customer entering their bid price and viewing the outcome of their bid request
+customer_bid = int(input("Enter your bid price: "))
+customer_room_type = input("Enter the room type you would like to bid on (Standard, Deluxe, or Suite): ")
+if standard_handler.handle_bid(customer_bid, customer_room_type):
+    print(f"Congratulations! Your bid of {customer_bid} for a {customer_room_type} room has been accepted.")
+else:
+    print(f"Sorry, your bid of {customer_bid} for a {customer_room_type} room has been rejected. Please try again with a different bid amount.")
+
