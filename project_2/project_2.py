@@ -31,28 +31,34 @@ class Handler:
 
 
 class StandardRoomHandler(Handler):
+    rooms_available_standard = 45
+
     def can_accept_bid(self, bid_amount, room_type):
         if room_type == "Standard":
-            if 80 <= bid_amount <= 150 and rooms_available_standard > 0:
-                rooms_available_standard -= 1
+            if 80 <= bid_amount <= 150 and self.rooms_available_standard > 0:
+                self.rooms_available_standard -= 1
                 return True
         return False
 
 
 class DeluxeRoomHandler(Handler):
+    rooms_available_deluxe = 15
+
     def can_accept_bid(self, bid_amount, room_type):
         if room_type == "Deluxe":
-            if 150 <= bid_amount <= 280 and rooms_available_deluxe > 0:
-                rooms_available_deluxe -= 1
+            if 150 <= bid_amount <= 280 and self.rooms_available_deluxe > 0:
+                self.rooms_available_deluxe -= 1
                 return True
         return False
 
 
 class SuiteRoomHandler(Handler):
+    rooms_available_suite = 10
+
     def can_accept_bid(self, bid_amount, room_type):
         if room_type == "Suite":
-            if bid_amount >= 280 and rooms_available_suite > 0:
-                rooms_available_suite -= 1
+            if bid_amount >= 280 and self.rooms_available_suite > 0:
+                self.rooms_available_suite -= 1
                 return True
         return False
 
