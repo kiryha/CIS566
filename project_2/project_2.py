@@ -3,6 +3,9 @@ This project involves implementing a hotel room bidding system that utilizes the
 The system allows customers to bid on available hotel rooms, and the COR pattern is used to handle the bid requests.
 """
 
+from PySide2 import QtWidgets, QtGui
+from ui import main_window
+
 
 class HotelRoom:
     def __init__(self, room_type, price_range, rooms_available):
@@ -63,52 +66,81 @@ class SuiteRoomHandler(Handler):
         return False
 
 
-# Initialize hotel rooms
-standard_room = HotelRoom("Standard", "$80 - $150", 45)
-deluxe_room = HotelRoom("Deluxe", "$150 - $280", 15)
-suite_room = HotelRoom("Suite", "$280 and above", 10)
+class HotelRoomUI(QtWidgets.QMainWindow, main_window.Ui_HotelRoom):
+    def __init__(self):
+        super(HotelRoomUI, self).__init__()
+        self.setupUi(self)
+        self.comRoomType.addItems(['Standard', 'Deluxe', 'Suite'])
 
-# Initialize handlers
-standard_handler = StandardRoomHandler()
-deluxe_handler = DeluxeRoomHandler()
-suite_handler = SuiteRoomHandler()
+        # Initialize hotel rooms
+        self.standard_room = HotelRoom("Standard", "$80 - $150", 45)
+        self.deluxe_room = HotelRoom("Deluxe", "$150 - $280", 15)
+        self.suite_room = HotelRoom("Suite", "$280 and above", 10)
 
-# Chain the handlers together
-standard_handler.successor = deluxe_handler
-deluxe_handler.successor = suite_handler
+        # Initialize handlers
+        self.standard_handler = StandardRoomHandler()
+        self.deluxe_handler = DeluxeRoomHandler()
+        self.suite_handler = SuiteRoomHandler()
+
+        # Chain the handlers together
+        self.standard_handler.successor = self.deluxe_handler
+        self.deluxe_handler.successor = self.suite_handler
+
+        # Handle bid requests
+        # self.handle_requests()
+        # self.check_availability()
+
+        # UI
+        self.btnBid.clicked.connect(self.process_bid)
+
+    def handle_requests(self):
+
+        bid_requests = [
+            {"room_type": "Standard", "bid_amount": 120},
+            {"room_type": "Deluxe", "bid_amount": 180},
+            {"room_type": "Suite", "bid_amount": 300},
+            {"room_type": "Standard", "bid_amount": 90},
+            {"room_type": "Deluxe", "bid_amount": 250},
+            {"room_type": "Suite", "bid_amount": 400},
+        ]
+
+        # Handle the bid requests
+        for request in bid_requests:
+            if not self.standard_handler.handle_bid(request["bid_amount"], request["room_type"]):
+                print(f"No handler found for {request['room_type']} room with bid amount of {request['bid_amount']}")
+            else:
+                print(
+                    f"Bid request for {request['room_type']} room with bid amount of {request['bid_amount']} accepted.")
+
+    def check_availability(self):
+        if self.standard_room.rooms_available == 0 and \
+           self.deluxe_room.rooms_available == 0 and \
+           self.suite_room.rooms_available == 0:
+            print("All rooms are booked out.")
+        else:
+            print("\nCurrent Available Rooms:")
+            print(self.standard_room)
+            print(self.deluxe_room)
+            print(self.suite_room)
+
+    def process_bid(self):
+
+        self.txtResults.clear()
+        customer_bid = int(self.linBidAmount.text())
+        customer_room_type = self.comRoomType.currentText()
+
+        if self.standard_handler.handle_bid(customer_bid, customer_room_type):
+            message = f"Congratulations! Your bid of {customer_bid} for a {customer_room_type} room has been accepted."
+        else:
+            message = f"Sorry, your bid of {customer_bid} for a {customer_room_type} room has been rejected. " \
+                      f"Please try again with a different bid amount."
+
+        self.txtResults.append(message)
 
 
-# Simulate bid requests
-bid_requests = [
-    {"room_type": "Standard", "bid_amount": 120},
-    {"room_type": "Deluxe", "bid_amount": 180},
-    {"room_type": "Suite", "bid_amount": 300},
-    {"room_type": "Standard", "bid_amount": 90},
-    {"room_type": "Deluxe", "bid_amount": 250},
-    {"room_type": "Suite", "bid_amount": 400},
-]
-
-# Handle the bid requests
-for request in bid_requests:
-    if not standard_handler.handle_bid(request["bid_amount"], request["room_type"]):
-        print(f"No handler found for {request['room_type']} room with bid amount of {request['bid_amount']}")
-    else:
-        print(f"Bid request for {request['room_type']} room with bid amount of {request['bid_amount']} accepted.")
-
-# Check if any rooms are still available
-if standard_room.rooms_available == 0 and deluxe_room.rooms_available == 0 and suite_room.rooms_available == 0:
-    print("All rooms are booked out.")
-else:
-    print("\nCurrent Available Rooms:")
-    print(standard_room)
-    print(deluxe_room)
-    print(suite_room)
-
-# Example of a customer entering their bid price and viewing the outcome of their bid request
-customer_bid = int(input("Enter your bid price: "))
-customer_room_type = input("Enter the room type you would like to bid on (Standard, Deluxe, or Suite): ")
-if standard_handler.handle_bid(customer_bid, customer_room_type):
-    print(f"Congratulations! Your bid of {customer_bid} for a {customer_room_type} room has been accepted.")
-else:
-    print(f"Sorry, your bid of {customer_bid} for a {customer_room_type} room has been rejected. Please try again with a different bid amount.")
+if __name__ == "__main__":
+    app = QtWidgets.QApplication([])
+    hotel_room = HotelRoomUI()
+    hotel_room.show()
+    app.exec_()
 
