@@ -3,6 +3,7 @@ CIS 566 Term Project: Split Smart - share expenses
 """
 
 import os
+import time
 import sqlite3
 from PySide2 import QtWidgets, QtCore, QtGui
 from ui import ui_main
@@ -44,11 +45,22 @@ class Balance:
 
 
 class Expense:
-    def __init__(self):
-        self.id = None
-        self.expense = None
-        self.user_id = ''
-        self.description = ''
+    def __init__(self, expense_tuple):
+        self.id = expense_tuple[0]
+        self.name = expense_tuple[1]
+        self.amount = expense_tuple[2]
+        self.date = expense_tuple[3]
+        self.description = expense_tuple[4]
+
+
+class UserExpense:
+    def __init__(self, user_expense_tuple):
+        self.id = user_expense_tuple[0]
+        self.expense_id = user_expense_tuple[1]
+        self.user_id = user_expense_tuple[2]
+        self.group_id = user_expense_tuple[3]
+        self.amount = user_expense_tuple[4]
+        self.description = user_expense_tuple[5]
 
 
 class Database:
@@ -56,7 +68,7 @@ class Database:
         self.sql_file_path = sql_file_path
         self.users = []
         self.groups = []
-        self.group_users = []
+        # self.group_users = []
 
         self.init_database()
 
@@ -85,7 +97,26 @@ class Database:
 
         return groups
 
+    def convert_to_expense(self, expense_tuples):
+
+        expenses = []
+
+        for expense_tuple in expense_tuples:
+            expenses.append(Expense(expense_tuple))
+
+        return expenses
+
+    def convert_to_user_expense(self, user_expense_tuples):
+
+        user_expenses = []
+
+        for user_expense_tuple in user_expense_tuples:
+            user_expenses.append(UserExpense(user_expense_tuple))
+
+        return user_expenses
+
     # CRUD
+    # Users
     def add_user(self, user_tuple):
 
         user = User(user_tuple)
@@ -147,6 +178,7 @@ class Database:
         if user_tuples:
             return self.convert_to_user(user_tuples)
 
+    # Groups
     def add_group(self, group_tuple):
 
         group = Group(group_tuple)
@@ -172,6 +204,22 @@ class Database:
 
         return group
 
+    def get_group(self, group_id):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'group' WHERE id=:id",
+                       {'id': group_id})
+
+        group_tuple = cursor.fetchone()
+
+        connection.commit()
+        connection.close()
+
+        if group_tuple:
+            return self.convert_to_group([group_tuple])[0]
+
     def get_groups(self):
 
         connection = sqlite3.connect(self.sql_file_path)
@@ -190,6 +238,8 @@ class Database:
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
+        user_name = self.get_user(user_id).first_name
+        group_name = self.get_group(group_id).name
 
         # Add object to DB
         cursor.execute("INSERT INTO 'group_user' VALUES ("
@@ -201,7 +251,7 @@ class Database:
                        {'id': cursor.lastrowid,
                         'user_id': user_id,
                         'group_id': group_id,
-                        'description': ''})
+                        'description': f'{user_name} in {group_name}'})
 
         connection.commit()
         connection.close()
@@ -223,7 +273,9 @@ class Database:
     def get_group_users(self, group_id):
 
         # Clear group users data
-        del self.group_users[:]
+        # del self.group_users[:]
+
+        group_users = []
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -239,7 +291,41 @@ class Database:
 
             for group_user_tuple in group_user_tuples:
                 user = self.get_user(group_user_tuple[1])
-                self.group_users.append(user)
+                group_users.append(user)
+
+        return group_users
+
+    # Expenses
+    def add_expense(self, expense_tuple, group_id):
+
+        expense = Expense(expense_tuple)
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        # Add object to DB
+        cursor.execute("INSERT INTO 'expense' VALUES ("
+                       ":id,"
+                       ":name,"
+                       ":amount,"
+                       ":date,"
+                       ":description)",
+
+                       {'id': cursor.lastrowid,
+                        'name': expense.name,
+                        'amount': expense.amount,
+                        'date': expense.date,
+                        'description': ''})
+
+        connection.commit()
+        expense.id = cursor.lastrowid  # Add database ID to the object
+        connection.close()
+
+        # Get group users and add user expenses
+        group_users = self.get_group_users(group_id)
+
+        for user in group_users:
+            user_expense_tuple = [None, expense.id, user.id, group_id, 0, '']
 
 
 # Data Models
@@ -250,6 +336,7 @@ class ListModel(QtCore.QAbstractListModel):
         self.database = database
         self.attribute = attribute
         self.group_id = group_id
+        self.group_users = []
 
     def rowCount(self, parent):
 
@@ -260,13 +347,13 @@ class ListModel(QtCore.QAbstractListModel):
             return len(self.database.users)
 
         if self.attribute == 'group_users':
-            self.database.get_group_users(self.group_id)
-            return len(self.database.group_users)
+            del self.group_users[:]
+            self.group_users.extend(self.database.get_group_users(self.group_id))
+            return len(self.group_users)
 
     def data(self, index, role):
 
         if not index.isValid():
-            print('NV!!!!!!')
             return
 
         # Get selected row
@@ -277,7 +364,7 @@ class ListModel(QtCore.QAbstractListModel):
         if self.attribute == 'users':
             obj = self.database.users[row_index]
         if self.attribute == 'group_users':
-            obj = self.database.group_users[row_index]
+            obj = self.group_users[row_index]
 
         if role == QtCore.Qt.DisplayRole:  # Display name in UI
 
@@ -390,10 +477,15 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.group_manager = GroupManager(self)
 
         # UI commands
+        # Users
         self.btnSignUp.clicked.connect(self.sign_up_user)
+        # Groups
         self.btnCreateGroup.clicked.connect(self.create_group)
         self.btnManageGroupUsers.clicked.connect(self.manage_groups)
+        # Expenses
+        self.btnCreateExpense.clicked.connect(self.create_expense)
 
+        # Common
         self.btnSplitSmart.clicked.connect(self.test)
 
     # Init
@@ -429,6 +521,26 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
                         FOREIGN KEY(group_id) REFERENCES "group"(id)
                         )''')
 
+        cursor.execute('''CREATE TABLE "expense" (
+                        id integer primary key autoincrement,
+                        name text,
+                        amount real,
+                        date text,
+                        description text
+                        )''')
+
+        cursor.execute('''CREATE TABLE "user_expense" (
+                        id integer primary key autoincrement,
+                        expense_id integer,
+                        user_id integer,
+                        group_id integer,
+                        amount real,
+                        description text,
+                        FOREIGN KEY(expense_id) REFERENCES "expense"(id),
+                        FOREIGN KEY(user_id) REFERENCES "user"(id),
+                        FOREIGN KEY(group_id) REFERENCES "group"(id)
+                        )''')
+
         connection.commit()
         connection.close()
 
@@ -459,11 +571,11 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
             'groups': [
                 {'id': 1,
-                 'name': 'Penoplast',
+                 'name': 'Trip to Japan',
                  'description': ''},
 
                 {'id': 2,
-                 'name': 'Booze',
+                 'name': 'Graduation Party',
                  'description': ''}]}
 
         for user_data in populate_data['users']:
@@ -514,6 +626,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         self.model_groups = ComboboxModel(self.database, 'groups')
         self.comGroups.setModel(self.model_groups)
+        self.comGroupsFoExpense.setModel(self.model_groups)
 
     # Core
     def sign_up_user(self):
@@ -547,6 +660,18 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         for user in users:
             self.database.add_user_to_group(user.id, group_id)
+
+    def create_expense(self):
+
+        expense_name = self.linExpenceName.text()
+        expense_amount = self.linExpenceAmount.text()
+        model = self.comGroupsFoExpense.model().index(self.comGroups.currentIndex(), 0)
+        group = model.data(QtCore.Qt.UserRole + 1)
+        date = time.strftime('20%y_%m_%d_%H_%M', time.localtime(time.time()))
+
+        expense_tuple = [None, expense_name, expense_amount, date, '']
+
+        self.database.add_expense(expense_tuple, group.id)
 
     # UI Calls
     def manage_groups(self):

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>407</width>
-    <height>806</height>
+    <width>617</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,11 +25,11 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_1">
        <attribute name="title">
-        <string>Login / Sign Up</string>
+        <string>Users</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -311,6 +311,107 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>Expenses</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QSplitter" name="splitter_8">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QLabel" name="label_8">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Group for Expense</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="comGroupsFoExpense"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_9">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QLabel" name="label_9">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Expence Name | Amount</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="linExpenceName"/>
+          <widget class="QLineEdit" name="linExpenceAmount"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnCreateExpense">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>35</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Create Expense</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Edit Expence</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableView" name="tabExpenses"/>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -320,7 +421,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>407</width>
+     <width>617</width>
      <height>21</height>
     </rect>
    </property>

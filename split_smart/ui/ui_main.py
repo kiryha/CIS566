@@ -17,7 +17,7 @@ class Ui_SplitSmart(object):
     def setupUi(self, SplitSmart):
         if not SplitSmart.objectName():
             SplitSmart.setObjectName(u"SplitSmart")
-        SplitSmart.resize(407, 806)
+        SplitSmart.resize(617, 500)
         self.centralwidget = QWidget(SplitSmart)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -188,13 +188,76 @@ class Ui_SplitSmart(object):
         self.verticalLayout_3.addItem(self.verticalSpacer_2)
 
         self.tabWidget.addTab(self.tab_2, "")
+        self.tab_3 = QWidget()
+        self.tab_3.setObjectName(u"tab_3")
+        self.verticalLayout_4 = QVBoxLayout(self.tab_3)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.splitter_8 = QSplitter(self.tab_3)
+        self.splitter_8.setObjectName(u"splitter_8")
+        self.splitter_8.setOrientation(Qt.Horizontal)
+        self.label_8 = QLabel(self.splitter_8)
+        self.label_8.setObjectName(u"label_8")
+        self.label_8.setMinimumSize(QSize(120, 0))
+        self.label_8.setMaximumSize(QSize(120, 16777215))
+        self.splitter_8.addWidget(self.label_8)
+        self.comGroupsFoExpense = QComboBox(self.splitter_8)
+        self.comGroupsFoExpense.setObjectName(u"comGroupsFoExpense")
+        self.splitter_8.addWidget(self.comGroupsFoExpense)
+
+        self.verticalLayout_4.addWidget(self.splitter_8)
+
+        self.splitter_9 = QSplitter(self.tab_3)
+        self.splitter_9.setObjectName(u"splitter_9")
+        self.splitter_9.setOrientation(Qt.Horizontal)
+        self.label_9 = QLabel(self.splitter_9)
+        self.label_9.setObjectName(u"label_9")
+        self.label_9.setMinimumSize(QSize(120, 0))
+        self.label_9.setMaximumSize(QSize(120, 16777215))
+        self.splitter_9.addWidget(self.label_9)
+        self.linExpenceName = QLineEdit(self.splitter_9)
+        self.linExpenceName.setObjectName(u"linExpenceName")
+        self.splitter_9.addWidget(self.linExpenceName)
+        self.linExpenceAmount = QLineEdit(self.splitter_9)
+        self.linExpenceAmount.setObjectName(u"linExpenceAmount")
+        self.splitter_9.addWidget(self.linExpenceAmount)
+
+        self.verticalLayout_4.addWidget(self.splitter_9)
+
+        self.btnCreateExpense = QPushButton(self.tab_3)
+        self.btnCreateExpense.setObjectName(u"btnCreateExpense")
+        self.btnCreateExpense.setMinimumSize(QSize(0, 35))
+
+        self.verticalLayout_4.addWidget(self.btnCreateExpense)
+
+        self.line_3 = QFrame(self.tab_3)
+        self.line_3.setObjectName(u"line_3")
+        self.line_3.setFrameShape(QFrame.HLine)
+        self.line_3.setFrameShadow(QFrame.Sunken)
+
+        self.verticalLayout_4.addWidget(self.line_3)
+
+        self.label_10 = QLabel(self.tab_3)
+        self.label_10.setObjectName(u"label_10")
+
+        self.verticalLayout_4.addWidget(self.label_10)
+
+        self.tabExpenses = QTableView(self.tab_3)
+        self.tabExpenses.setObjectName(u"tabExpenses")
+
+        self.verticalLayout_4.addWidget(self.tabExpenses)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer_3)
+
+        self.tabWidget.addTab(self.tab_3, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
         SplitSmart.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(SplitSmart)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 407, 21))
+        self.menubar.setGeometry(QRect(0, 0, 617, 21))
         SplitSmart.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(SplitSmart)
         self.statusbar.setObjectName(u"statusbar")
@@ -202,7 +265,7 @@ class Ui_SplitSmart(object):
 
         self.retranslateUi(SplitSmart)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(SplitSmart)
@@ -224,5 +287,10 @@ class Ui_SplitSmart(object):
         self.btnCreateGroup.setText(QCoreApplication.translate("SplitSmart", u"Create Group", None))
         self.btnManageGroupUsers.setText(QCoreApplication.translate("SplitSmart", u"Manage Group Users", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("SplitSmart", u"Groups", None))
+        self.label_8.setText(QCoreApplication.translate("SplitSmart", u"Group for Expense", None))
+        self.label_9.setText(QCoreApplication.translate("SplitSmart", u"Expence Name | Amount", None))
+        self.btnCreateExpense.setText(QCoreApplication.translate("SplitSmart", u"Create Expense", None))
+        self.label_10.setText(QCoreApplication.translate("SplitSmart", u"Edit Expence", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("SplitSmart", u"Expenses", None))
     # retranslateUi
 
