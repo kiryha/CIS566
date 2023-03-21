@@ -331,7 +331,7 @@ class Database:
         expense.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
 
-        print(f'>> database.add_expense: Group = {group_name}, Amount = {expense.amount}')
+        print(f'>> database.add_expense: Group | Expense Names = {group_name} | {expense.name}, Amount = {expense.amount}')
 
         # Get group users and add user expenses
         group_users = self.get_group_users(group_id)
@@ -809,16 +809,21 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     # Users
     def sign_up_user(self):
 
+        # Get data
         user_first_name = self.linSignupName.text()
         user_last_name = self.linSignupLastName.text()
         user_email = self.linSignupEmail.text()
         user_password = self.linSignupPassword.text()
-
-        print(f'Signing Up User {user_first_name} {user_last_name}...')
-
         user_tuple = [None, user_first_name, user_last_name, user_email, user_password, '']
 
+        # Update database
         self.database.add_user(user_tuple)
+
+        # Clean UI
+        self.linSignupName.clear()
+        self.linSignupLastName.clear()
+        self.linSignupEmail.clear()
+        self.linSignupPassword.clear()
 
     # Groups
     def create_group(self):
@@ -829,6 +834,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.model_groups.layoutAboutToBeChanged.emit()
         self.database.add_group(group_tuple)
         self.model_groups.layoutChanged.emit()
+
+        self.linGroupName.clear()
 
     def add_users_to_group(self):
 
@@ -873,6 +880,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     # Expenses
     def create_expense(self):
 
+        # Get data
         expense_name = self.linExpenceName.text()
         expense_amount = self.linExpenceAmount.text()
         date = time.strftime('20%y_%m_%d_%H_%M', time.localtime(time.time()))
@@ -880,11 +888,21 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         model = self.comGroupsFoExpense.model().index(self.comGroupsFoExpense.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
 
+        # Check, if group is empty, do not create expense
+        if not self.database.get_group_users(group.id):
+            print(f'>> Add users to group before adding expenses!')
+            return
+
         expense_tuple = [None, expense_name, expense_amount, date, '']
 
+        # Update Database
         self.model_user_expense.layoutAboutToBeChanged.emit()
         self.database.add_expense(expense_tuple, group.id)
         self.model_user_expense.layoutChanged.emit()
+
+        # Cleanup UI
+        self.linExpenceName.clear()
+        self.linExpenceAmount.clear()
 
     # General
     def test(self):
