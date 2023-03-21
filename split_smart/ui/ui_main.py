@@ -17,7 +17,7 @@ class Ui_SplitSmart(object):
     def setupUi(self, SplitSmart):
         if not SplitSmart.objectName():
             SplitSmart.setObjectName(u"SplitSmart")
-        SplitSmart.resize(617, 500)
+        SplitSmart.resize(453, 773)
         self.centralwidget = QWidget(SplitSmart)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -172,16 +172,45 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_3.addWidget(self.line_2)
 
+        self.label_11 = QLabel(self.tab_2)
+        self.label_11.setObjectName(u"label_11")
+
+        self.verticalLayout_3.addWidget(self.label_11)
+
         self.comGroups = QComboBox(self.tab_2)
         self.comGroups.setObjectName(u"comGroups")
 
         self.verticalLayout_3.addWidget(self.comGroups)
 
-        self.btnManageGroupUsers = QPushButton(self.tab_2)
-        self.btnManageGroupUsers.setObjectName(u"btnManageGroupUsers")
-        self.btnManageGroupUsers.setMinimumSize(QSize(0, 35))
+        self.splitter_10 = QSplitter(self.tab_2)
+        self.splitter_10.setObjectName(u"splitter_10")
+        self.splitter_10.setOrientation(Qt.Horizontal)
+        self.lisGroupUsers = QListView(self.splitter_10)
+        self.lisGroupUsers.setObjectName(u"lisGroupUsers")
+        self.lisGroupUsers.setMinimumSize(QSize(0, 500))
+        self.lisGroupUsers.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.splitter_10.addWidget(self.lisGroupUsers)
+        self.splitter_13 = QSplitter(self.splitter_10)
+        self.splitter_13.setObjectName(u"splitter_13")
+        self.splitter_13.setOrientation(Qt.Vertical)
+        self.btnRemoveUsersFromGroup = QPushButton(self.splitter_13)
+        self.btnRemoveUsersFromGroup.setObjectName(u"btnRemoveUsersFromGroup")
+        self.btnRemoveUsersFromGroup.setMinimumSize(QSize(0, 35))
+        self.btnRemoveUsersFromGroup.setMaximumSize(QSize(25, 16777215))
+        self.splitter_13.addWidget(self.btnRemoveUsersFromGroup)
+        self.btnAddUsersToGroup = QPushButton(self.splitter_13)
+        self.btnAddUsersToGroup.setObjectName(u"btnAddUsersToGroup")
+        self.btnAddUsersToGroup.setMinimumSize(QSize(0, 35))
+        self.btnAddUsersToGroup.setMaximumSize(QSize(25, 16777215))
+        self.splitter_13.addWidget(self.btnAddUsersToGroup)
+        self.splitter_10.addWidget(self.splitter_13)
+        self.lisUsers = QListView(self.splitter_10)
+        self.lisUsers.setObjectName(u"lisUsers")
+        self.lisUsers.setMinimumSize(QSize(0, 500))
+        self.lisUsers.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.splitter_10.addWidget(self.lisUsers)
 
-        self.verticalLayout_3.addWidget(self.btnManageGroupUsers)
+        self.verticalLayout_3.addWidget(self.splitter_10)
 
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -246,10 +275,6 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_4.addWidget(self.tabExpenses)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout_4.addItem(self.verticalSpacer_3)
-
         self.tabWidget.addTab(self.tab_3, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
@@ -257,7 +282,7 @@ class Ui_SplitSmart(object):
         SplitSmart.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(SplitSmart)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 617, 21))
+        self.menubar.setGeometry(QRect(0, 0, 453, 21))
         SplitSmart.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(SplitSmart)
         self.statusbar.setObjectName(u"statusbar")
@@ -265,7 +290,7 @@ class Ui_SplitSmart(object):
 
         self.retranslateUi(SplitSmart)
 
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(SplitSmart)
@@ -282,10 +307,12 @@ class Ui_SplitSmart(object):
         self.label.setText(QCoreApplication.translate("SplitSmart", u"Email", None))
         self.label_2.setText(QCoreApplication.translate("SplitSmart", u"Password", None))
         self.btnLogIn.setText(QCoreApplication.translate("SplitSmart", u"Log In", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QCoreApplication.translate("SplitSmart", u"Login / Sign Up", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QCoreApplication.translate("SplitSmart", u"Users", None))
         self.label_7.setText(QCoreApplication.translate("SplitSmart", u"Group Name", None))
         self.btnCreateGroup.setText(QCoreApplication.translate("SplitSmart", u"Create Group", None))
-        self.btnManageGroupUsers.setText(QCoreApplication.translate("SplitSmart", u"Manage Group Users", None))
+        self.label_11.setText(QCoreApplication.translate("SplitSmart", u"Manage Group Users: Group Users << >> All Users", None))
+        self.btnRemoveUsersFromGroup.setText(QCoreApplication.translate("SplitSmart", u">>", None))
+        self.btnAddUsersToGroup.setText(QCoreApplication.translate("SplitSmart", u"<<", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("SplitSmart", u"Groups", None))
         self.label_8.setText(QCoreApplication.translate("SplitSmart", u"Group for Expense", None))
         self.label_9.setText(QCoreApplication.translate("SplitSmart", u"Expence Name | Amount", None))

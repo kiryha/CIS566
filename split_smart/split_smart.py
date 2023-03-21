@@ -7,7 +7,6 @@ import time
 import sqlite3
 from PySide2 import QtWidgets, QtCore, QtGui
 from ui import ui_main
-from ui import ui_groups
 
 
 # Database
@@ -412,54 +411,6 @@ class ComboboxModel(QtCore.QAbstractListModel):
 
 
 # Application
-class GroupManager(QtWidgets.QDialog, ui_groups.Ui_GroupManager):
-    def __init__(self, parent=None):
-        super(GroupManager, self).__init__(parent=parent)
-        self.setupUi(self)
-        self.parent = parent
-
-        self.group = None
-        self.model_group_users = None
-        self.model_users = None
-
-        self.btnRemoveUsersFromGroup.clicked.connect(self.remove_users_from_group)
-        self.btnAddUsersToGroup.clicked.connect(self.add_users_to_group)
-
-    def showEvent(self, event):
-
-        self.labGroupName.setText(f'Group Name: {self.group.name}')
-        self.lisGroupUsers.setModel(self.model_group_users)
-        self.lisUsers.setModel(self.model_users)
-
-    def add_users_to_group(self):
-
-        self.model_group_users.layoutAboutToBeChanged.emit()
-
-        users = []
-        model_indexes = self.lisUsers.selectedIndexes()
-        for model_index in model_indexes:
-            obj = model_index.data(QtCore.Qt.UserRole + 1)
-            users.append(obj)
-
-        self.parent.add_users_to_group(users, self.group.id)
-
-        self.model_group_users.layoutChanged.emit()
-
-    def remove_users_from_group(self):
-
-        self.model_group_users.layoutAboutToBeChanged.emit()
-
-        users = []
-        model_indexes = self.lisGroupUsers.selectedIndexes()
-        for model_index in model_indexes:
-            obj = model_index.data(QtCore.Qt.UserRole + 1)
-            users.append(obj)
-
-        self.parent.remove_users_from_group(users, self.group.id)
-
-        self.model_group_users.layoutChanged.emit()
-
-
 class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     def __init__(self):
         super(SplitSmart, self).__init__()
@@ -470,18 +421,24 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.database = Database(self.sql_file_path)
 
         # Data Models
+        # Groups
         self.model_groups = None
+        # Group users
+        self.model_users = None
+        self.model_group_users = None
 
         self.init_ui()
 
-        self.group_manager = GroupManager(self)
+        # self.group_manager = GroupManager(self)
 
         # UI commands
         # Users
         self.btnSignUp.clicked.connect(self.sign_up_user)
         # Groups
         self.btnCreateGroup.clicked.connect(self.create_group)
-        self.btnManageGroupUsers.clicked.connect(self.manage_groups)
+        self.comGroups.currentIndexChanged.connect(self.populate_group_users)
+        self.btnRemoveUsersFromGroup.clicked.connect(self.remove_users_from_group)
+        self.btnAddUsersToGroup.clicked.connect(self.add_users_to_group)
         # Expenses
         self.btnCreateExpense.clicked.connect(self.create_expense)
 
@@ -628,7 +585,20 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.comGroups.setModel(self.model_groups)
         self.comGroupsFoExpense.setModel(self.model_groups)
 
-    # Core
+        self.populate_group_users()
+
+    def populate_group_users(self):
+
+        model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
+        group = model.data(QtCore.Qt.UserRole + 1)
+
+        self.model_users = ListModel(self.database, 'users')
+        self.model_group_users = ListModel(self.database, 'group_users', group.id)
+
+        self.lisGroupUsers.setModel(self.model_group_users)
+        self.lisUsers.setModel(self.model_users)
+
+    # Users
     def sign_up_user(self):
 
         user_first_name = self.linSignupName.text()
@@ -642,6 +612,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         self.database.add_user(user_tuple)
 
+    # Groups
     def create_group(self):
 
         group_name = self.linGroupName.text()
@@ -651,16 +622,47 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.database.add_group(group_tuple)
         self.model_groups.layoutChanged.emit()
 
-    def remove_users_from_group(self, users, group_id):
+    def add_users_to_group(self):
 
+        self.model_group_users.layoutAboutToBeChanged.emit()
+
+        # Get data from UI
+        users = []
+        model_indexes = self.lisUsers.selectedIndexes()
+        model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
+        group = model.data(QtCore.Qt.UserRole + 1)
+
+        for model_index in model_indexes:
+            obj = model_index.data(QtCore.Qt.UserRole + 1)
+            users.append(obj)
+
+        # Update database
         for user in users:
-            self.database.remove_user_from_group(user.id, group_id)
+            self.database.add_user_to_group(user.id, group.id)
 
-    def add_users_to_group(self, users, group_id):
+        self.model_group_users.layoutChanged.emit()
 
+    def remove_users_from_group(self):
+
+        self.model_group_users.layoutAboutToBeChanged.emit()
+
+        # Get data from UI
+        users = []
+        model_indexes = self.lisGroupUsers.selectedIndexes()
+        model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
+        group = model.data(QtCore.Qt.UserRole + 1)
+
+        for model_index in model_indexes:
+            obj = model_index.data(QtCore.Qt.UserRole + 1)
+            users.append(obj)
+
+        # Update database
         for user in users:
-            self.database.add_user_to_group(user.id, group_id)
+            self.database.remove_user_from_group(user.id, group.id)
 
+        self.model_group_users.layoutChanged.emit()
+
+    # Expenses
     def create_expense(self):
 
         expense_name = self.linExpenceName.text()
