@@ -68,6 +68,9 @@ class Database:
         self.users = []
         self.groups = []
 
+        # Dynamic data
+        self.user_expenses = []
+
         self.init_database()
 
     def init_database(self):
@@ -142,7 +145,8 @@ class Database:
         user.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
 
-        # print 'User {0} {1} added!'.format(user.first_name, user.last_name)
+        print(f'>> database.add_user: Name = {user.first_name} {user.last_name}')
+
         self.users.append(user)
 
         return user
@@ -198,6 +202,8 @@ class Database:
         group.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
 
+        print(f'>> database.add_group: Name = {group.name}')
+
         self.groups.append(group)
 
         return group
@@ -234,10 +240,11 @@ class Database:
 
     def add_user_to_group(self, user_id, group_id):
 
+        user_name = f'{self.get_user(user_id).first_name} {self.get_user(user_id).last_name}'
+        group_name = self.get_group(group_id).name
+
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
-        user_name = self.get_user(user_id).first_name
-        group_name = self.get_group(group_id).name
 
         # Add object to DB
         cursor.execute("INSERT INTO 'group_user' VALUES ("
@@ -254,7 +261,12 @@ class Database:
         connection.commit()
         connection.close()
 
+        print(f'>> database.add_user_to_group: User| Group Names = {user_name} | {group_name}')
+
     def remove_user_from_group(self, user_id, group_id):
+
+        user_name = f'{self.get_user(user_id).first_name} {self.get_user(user_id).last_name}'
+        group_name = self.get_group(group_id).name
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -267,6 +279,8 @@ class Database:
 
         connection.commit()
         connection.close()
+
+        print(f'>> database.remove_user_from_group: User| Group Names = {user_name} | {group_name}')
 
     def get_group_users(self, group_id):
 
@@ -317,7 +331,7 @@ class Database:
         expense.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
 
-        print(f'>> add_expense: Group = {group_name}, Amount = {expense.amount}')
+        print(f'>> database.add_expense: Group = {group_name}, Amount = {expense.amount}')
 
         # Get group users and add user expenses
         group_users = self.get_group_users(group_id)
@@ -346,7 +360,7 @@ class Database:
 
         user_expense = UserExpense(user_expense_tuple)
         expense_name = self.get_expense(user_expense.expense_id).name
-        user_name = self.get_user(user_expense.user_id).first_name
+        user_name = f'{self.get_user(user_expense.user_id).first_name} {self.get_user(user_expense.user_id).last_name}'
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -371,11 +385,16 @@ class Database:
         user_expense.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
 
-        print(f'>> add_user_expense: Expense Name = {expense_name}, User = {user_name}')
+        print(f'>> database.add_user_expense: Expense Name = {expense_name}, User = {user_name}')
+
+        self.user_expenses.append(user_expense)
 
         return user_expense
 
     def get_user_expenses(self, group_id):
+
+        # Clean up data
+        del self.user_expenses[:]
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -389,7 +408,24 @@ class Database:
         connection.close()
 
         if user_expense_tuples:
-            return self.convert_to_user_expense(user_expense_tuples)
+            user_expenses = self.convert_to_user_expense(user_expense_tuples)
+            self.user_expenses.extend(user_expenses)
+
+    def get_user_expense(self, user_expense_id):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'user_expense' WHERE id=:id",
+                       {'id': user_expense_id})
+
+        user_expense_tuple = cursor.fetchone()
+
+        connection.commit()
+        connection.close()
+
+        if user_expense_tuple:
+            return self.convert_to_user_expense([user_expense_tuple])[0]
 
     def update_user_expense(self, user_expense_id, amount):
 
@@ -406,6 +442,12 @@ class Database:
 
         connection.commit()
         connection.close()
+
+        user_expense = self.get_user_expense(user_expense_id)
+        expense = self.get_expense(user_expense.expense_id)
+        user_name = f'{self.get_user(user_expense.user_id).first_name} {self.get_user(user_expense.user_id).last_name}'
+
+        print(f'>> database.update_user_expense: Expense Name = {expense.name}, User = {user_name}, Amount = {amount}')
 
 
 # Data Models
@@ -492,15 +534,10 @@ class ComboboxModel(QtCore.QAbstractListModel):
 
 
 class UserExpenseModel(QtCore.QAbstractTableModel):
-    def __init__(self, database, group_id, parent=None):
+    def __init__(self, database, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self.database = database
-        self.group_id = group_id
-        self.user_expenses = []
         self.header = ['Expense Name', 'User Name', 'Amount']
-
-        # Init User Expense
-        self.user_expenses.extend(self.database.get_user_expenses(self.group_id))
 
     def flags(self, index):
 
@@ -516,7 +553,7 @@ class UserExpenseModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, parent):
 
-        return len(self.user_expenses)
+        return len(self.database.user_expenses)
 
     def columnCount(self, parent):
 
@@ -531,21 +568,21 @@ class UserExpenseModel(QtCore.QAbstractTableModel):
         column = index.column()
 
         if role == QtCore.Qt.DisplayRole:
-            expense = self.database.get_expense(self.user_expenses[row].expense_id)
+            expense = self.database.get_expense(self.database.user_expenses[row].expense_id)
 
             if column == 0:
                 return expense.name
 
             if column == 1:
-                user = self.database.get_user(self.user_expenses[row].user_id)
+                user = self.database.get_user(self.database.user_expenses[row].user_id)
                 return f'{user.first_name} {user.last_name}'
 
             if column == 2:
-                return self.user_expenses[row].amount
+                return self.database.user_expenses[row].amount
 
         if role == QtCore.Qt.EditRole:
             if column == 2:
-                return self.user_expenses[row].amount
+                return self.database.user_expenses[row].amount
 
     def setData(self, index, input_data, role=QtCore.Qt.EditRole):
 
@@ -553,9 +590,10 @@ class UserExpenseModel(QtCore.QAbstractTableModel):
         column = index.column()
 
         if role == QtCore.Qt.EditRole:
-            user_expense = self.user_expenses[row]
+            user_expense = self.database.user_expenses[row]
             if column == 2:
                 self.database.update_user_expense(user_expense.id, input_data)
+                self.database.get_user_expenses(user_expense.group_id)
                 self.layoutChanged.emit()
 
             return True
@@ -764,7 +802,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         model = self.comGroupsFoExpense.model().index(self.comGroupsFoExpense.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
 
-        self.model_user_expense = UserExpenseModel(self.database, group.id)
+        self.database.get_user_expenses(group.id)
+        self.model_user_expense = UserExpenseModel(self.database)
         self.tabExpenses.setModel(self.model_user_expense)
 
     # Users
@@ -836,9 +875,10 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         expense_name = self.linExpenceName.text()
         expense_amount = self.linExpenceAmount.text()
-        model = self.comGroupsFoExpense.model().index(self.comGroups.currentIndex(), 0)
-        group = model.data(QtCore.Qt.UserRole + 1)
         date = time.strftime('20%y_%m_%d_%H_%M', time.localtime(time.time()))
+
+        model = self.comGroupsFoExpense.model().index(self.comGroupsFoExpense.currentIndex(), 0)
+        group = model.data(QtCore.Qt.UserRole + 1)
 
         expense_tuple = [None, expense_name, expense_amount, date, '']
 
