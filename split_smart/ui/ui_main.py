@@ -235,6 +235,11 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_4.addWidget(self.splitter_8)
 
+        self.tabExpenses = QTableView(self.tab_3)
+        self.tabExpenses.setObjectName(u"tabExpenses")
+
+        self.verticalLayout_4.addWidget(self.tabExpenses)
+
         self.splitter_9 = QSplitter(self.tab_3)
         self.splitter_9.setObjectName(u"splitter_9")
         self.splitter_9.setOrientation(Qt.Horizontal)
@@ -258,23 +263,6 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_4.addWidget(self.btnCreateExpense)
 
-        self.line_3 = QFrame(self.tab_3)
-        self.line_3.setObjectName(u"line_3")
-        self.line_3.setFrameShape(QFrame.HLine)
-        self.line_3.setFrameShadow(QFrame.Sunken)
-
-        self.verticalLayout_4.addWidget(self.line_3)
-
-        self.label_10 = QLabel(self.tab_3)
-        self.label_10.setObjectName(u"label_10")
-
-        self.verticalLayout_4.addWidget(self.label_10)
-
-        self.tabExpenses = QTableView(self.tab_3)
-        self.tabExpenses.setObjectName(u"tabExpenses")
-
-        self.verticalLayout_4.addWidget(self.tabExpenses)
-
         self.tabWidget.addTab(self.tab_3, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
@@ -290,7 +278,7 @@ class Ui_SplitSmart(object):
 
         self.retranslateUi(SplitSmart)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(SplitSmart)
@@ -316,8 +304,7 @@ class Ui_SplitSmart(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("SplitSmart", u"Groups", None))
         self.label_8.setText(QCoreApplication.translate("SplitSmart", u"Group for Expense", None))
         self.label_9.setText(QCoreApplication.translate("SplitSmart", u"Expence Name | Amount", None))
-        self.btnCreateExpense.setText(QCoreApplication.translate("SplitSmart", u"Create Expense", None))
-        self.label_10.setText(QCoreApplication.translate("SplitSmart", u"Edit Expence", None))
+        self.btnCreateExpense.setText(QCoreApplication.translate("SplitSmart", u"Create Expense for Current Group", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("SplitSmart", u"Expenses", None))
     # retranslateUi
 
