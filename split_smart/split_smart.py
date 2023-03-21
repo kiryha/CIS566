@@ -271,9 +271,6 @@ class Database:
 
     def get_group_users(self, group_id):
 
-        # Clear group users data
-        # del self.group_users[:]
-
         group_users = []
 
         connection = sqlite3.connect(self.sql_file_path)
@@ -298,6 +295,7 @@ class Database:
     def add_expense(self, expense_tuple, group_id):
 
         expense = Expense(expense_tuple)
+        group_name = self.get_group(group_id).name
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -314,17 +312,69 @@ class Database:
                         'name': expense.name,
                         'amount': expense.amount,
                         'date': expense.date,
-                        'description': ''})
+                        'description': f'For group: {group_name}'})
 
         connection.commit()
         expense.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
+
+        print(f'>> add_expense: Group = {group_name}, Amount = {expense.amount}')
 
         # Get group users and add user expenses
         group_users = self.get_group_users(group_id)
 
         for user in group_users:
             user_expense_tuple = [None, expense.id, user.id, group_id, 0, '']
+            self.add_user_expense(user_expense_tuple)
+
+    def get_expense(self, expense_id):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'expense' WHERE id=:id",
+                       {'id': expense_id})
+
+        expense_tuple = cursor.fetchone()
+
+        connection.commit()
+        connection.close()
+
+        if expense_tuple:
+            return self.convert_to_expense([expense_tuple])[0]
+
+    def add_user_expense(self, user_expense_tuple):
+
+        user_expense = UserExpense(user_expense_tuple)
+        expense_name = self.get_expense(user_expense.expense_id).name
+        user_name = self.get_user(user_expense.user_id).first_name
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        # Add object to DB
+        cursor.execute("INSERT INTO 'user_expense' VALUES ("
+                       ":id,"
+                       ":expense_id,"
+                       ":user_id,"
+                       ":group_id,"
+                       ":amount,"
+                       ":description)",
+
+                       {'id': cursor.lastrowid,
+                        'expense_id': user_expense.expense_id,
+                        'user_id': user_expense.user_id,
+                        'group_id': user_expense.group_id,
+                        'amount': user_expense.amount,
+                        'description': f'Expense {expense_name} for {user_name}'})
+
+        connection.commit()
+        user_expense.id = cursor.lastrowid  # Add database ID to the object
+        connection.close()
+
+        print(f'>> add_user_expense: Expense Name = {expense_name}, User = {user_name}')
+
+        return user_expense
 
 
 # Data Models
@@ -429,8 +479,6 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         self.init_ui()
 
-        # self.group_manager = GroupManager(self)
-
         # UI commands
         # Users
         self.btnSignUp.clicked.connect(self.sign_up_user)
@@ -515,8 +563,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
                 {'id': 2,
                  'first_name': 'Yulia',
                  'last_name': 'Basko',
-                 'email': 'jbasko@umich.edu',
-                 'password': 'sonechko',
+                 'email': 'basko@umich.edu',
+                 'password': 'love',
                  'description': ''},
 
                 {'id': 3,
