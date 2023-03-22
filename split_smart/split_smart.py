@@ -771,8 +771,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     def setup_table(self, table):
 
         table.verticalHeader().hide()
-        table.verticalHeader().ResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        table.horizontalHeader().ResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         table.horizontalHeader().setStretchLastSection(True)
 
     def init_ui(self):
