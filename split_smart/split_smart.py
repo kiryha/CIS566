@@ -5,6 +5,7 @@ CIS 566 Term Project: Split Smart - share expenses
 import os
 import time
 import sqlite3
+import smtplib
 from PySide2 import QtWidgets, QtCore, QtGui
 from ui import ui_main
 
@@ -889,7 +890,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         group = model.data(QtCore.Qt.UserRole + 1)
 
         # Check, if group is empty, do not create expense
-        if not self.database.get_group_users(group.id):
+        group_users = self.database.get_group_users(group.id)
+        if not group_users:
             print(f'>> Add users to group before adding expenses!')
             return
 
@@ -900,11 +902,42 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.database.add_expense(expense_tuple, group.id)
         self.model_user_expense.layoutChanged.emit()
 
+        # Sent notification about expense creation
+        # self.user_notification(group_users, expense_name, expense_amount, group.name)
+
         # Cleanup UI
         self.linExpenceName.clear()
         self.linExpenceAmount.clear()
 
     # General
+    def user_notification(self, group_users, expense_name, expense_amount, group_name):
+
+        print(f'>> Sending expense notification...')
+
+        # Authenticate
+        login = "random.t4@outlook.com"
+        password = 'starrs1234'
+        session = smtplib.SMTP('smtp-mail.outlook.com', 587)
+        session.starttls()
+        session.login(login, password)
+
+        # Send email to each user
+        for user in group_users:
+
+            print(f'>> User = {user.first_name} {user.last_name}')
+
+            subject = 'SplitSmart: new expense created'
+            text = f'Hello {user.first_name} {user.last_name},\n\n' \
+                   f'The expense "{expense_name}" for ${expense_amount} was created within group "{group_name}".\n\n' \
+                   f'Have a wonderful payment!\nSpitSmart team :)'
+            message = f'Subject: {subject}\n\n{text}'
+
+            session.sendmail(login, user.email, message)
+
+        session.quit()
+
+        print(f'>> Notification sent to all group users!')
+
     def test(self):
 
         print('Split Smart')
