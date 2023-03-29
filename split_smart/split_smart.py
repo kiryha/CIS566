@@ -66,11 +66,12 @@ class UserExpense:
 class Database:
     def __init__(self, sql_file_path):
         self.sql_file_path = sql_file_path
+        # Static data
         self.users = []
         self.groups = []
-
         # Dynamic data
         self.user_expenses = []
+        self.user_balances = []
 
         self.init_database()
 
@@ -450,6 +451,25 @@ class Database:
 
         print(f'>> database.update_user_expense: Expense Name = {expense.name}, User = {user_name}, Amount = {amount}')
 
+    # Balance
+    def get_user_balance(self, user_id):
+
+        # Get user
+        # Get user expenses
+        # ...
+        # return balance for other users
+
+        other_users = []
+        current_user = self.get_user(user_id)
+        users = self.get_users()
+
+        for user in users:
+            if user.id != user_id:
+                other_users.append(user)
+
+        del self.user_balances[:]
+        self.user_balances.extend(other_users)
+
 
 # Data Models
 class ListModel(QtCore.QAbstractListModel):
@@ -513,6 +533,9 @@ class ComboboxModel(QtCore.QAbstractListModel):
         if self.attribute == 'groups':
             return len(self.database.groups)
 
+        if self.attribute == 'users':
+            return len(self.database.users)
+
     def data(self, index, role):
 
         if not index.isValid():
@@ -523,12 +546,17 @@ class ComboboxModel(QtCore.QAbstractListModel):
 
         if self.attribute == 'groups':
             obj = self.database.groups[row_index]
-            # print(obj, obj.name)
+
+        if self.attribute == 'users':
+            obj = self.database.users[row_index]
 
         if role == QtCore.Qt.DisplayRole:  # Display name in UI
 
             if self.attribute == 'groups':
                 return obj.name
+
+            if self.attribute == 'users':
+                return f'{obj.first_name} {obj.last_name}'
 
         if role == QtCore.Qt.UserRole + 1:  # Return object
             return obj
@@ -600,6 +628,51 @@ class UserExpenseModel(QtCore.QAbstractTableModel):
             return True
 
 
+class UserBalanceModel(QtCore.QAbstractTableModel):
+    def __init__(self, database, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+        self.database = database
+        self.header = ['User Name', 'Owes Amount']
+
+    def flags(self, index):
+
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def headerData(self, column, orientation, role):
+
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self.header[column]
+
+    def rowCount(self, parent):
+
+        return len(self.database.user_expenses)
+
+    def columnCount(self, parent):
+
+        return len(self.header)
+
+    def data(self, index, role):
+
+        if not index.isValid():
+            return
+
+        row = index.row()
+        column = index.column()
+
+        if role == QtCore.Qt.DisplayRole:
+            expense = self.database.get_expense(self.database.user_expenses[row].expense_id)
+
+            if column == 0:
+                return expense.name
+
+            if column == 1:
+                user = self.database.get_user(self.database.user_expenses[row].user_id)
+                return f'{user.first_name} {user.last_name}'
+
+            if column == 2:
+                return self.database.user_expenses[row].amount
+
+
 # Application
 class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     def __init__(self):
@@ -611,12 +684,12 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.database = Database(self.sql_file_path)
 
         # Data Models
-        # Groups
         self.model_groups = None
-        # Group users
-        self.model_users = None
+        self.list_model_users = None
+        self.combobox_model_users = None
         self.model_group_users = None
         self.model_user_expense = None
+        self.model_user_balance = None
 
         self.init_ui()
 
@@ -631,6 +704,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         # Expenses
         self.comGroupsFoExpense.currentIndexChanged.connect(self.populate_user_expenses)
         self.btnCreateExpense.clicked.connect(self.create_expense)
+        # Balance Tracking
+        self.comGroupsFoExpense.currentIndexChanged.connect(self.populate_user_balance)
 
         # Common
         self.btnSplitSmart.clicked.connect(self.test)
@@ -779,33 +854,51 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     def init_ui(self):
 
         self.setup_table(self.tabExpenses)
+        self.setup_table(self.tabBalace)
 
+        # Groups data
         self.model_groups = ComboboxModel(self.database, 'groups')
         self.comGroups.setModel(self.model_groups)
         self.comGroupsFoExpense.setModel(self.model_groups)
 
+        # Users data
+        self.combobox_model_users = ComboboxModel(self.database, 'users')
+        self.comUsersBalance.setModel(self.combobox_model_users)
+
         self.populate_group_users()
         self.populate_user_expenses()
+        self.populate_user_balance()
 
     def populate_group_users(self):
 
         model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
 
-        self.model_users = ListModel(self.database, 'users')
+        self.list_model_users = ListModel(self.database, 'users')
         self.model_group_users = ListModel(self.database, 'group_users', group.id)
 
         self.lisGroupUsers.setModel(self.model_group_users)
-        self.lisUsers.setModel(self.model_users)
+        self.lisUsers.setModel(self.list_model_users)
 
     def populate_user_expenses(self):
 
+        # Get group from UI
         model = self.comGroupsFoExpense.model().index(self.comGroupsFoExpense.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
 
         self.database.get_user_expenses(group.id)
         self.model_user_expense = UserExpenseModel(self.database)
         self.tabExpenses.setModel(self.model_user_expense)
+
+    def populate_user_balance(self):
+
+        # Get user from UI
+        model = self.comUsersBalance.model().index(self.comUsersBalance.currentIndex(), 0)
+        user = model.data(QtCore.Qt.UserRole + 1)
+
+        self.database.get_user_balance(user.id)
+        self.model_user_balance = UserBalanceModel(self.database)
+        self.tabBalace.setModel(self.model_user_balance)
 
     # Users
     def sign_up_user(self):
