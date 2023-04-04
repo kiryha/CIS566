@@ -37,11 +37,11 @@ class GroupUser:
 
 
 class Balance:
-    def __init__(self):
-        self.id = None
-        self.balance = None
-        self.user_id = ''
-        self.description = ''
+    def __init__(self, balance_tuple):
+        self.id = balance_tuple[0]
+        self.amount = balance_tuple[1]
+        self.user_id = balance_tuple[2]
+        self.description = balance_tuple[3]
 
 
 class Expense:
@@ -462,23 +462,49 @@ class Database:
         print(f'>> database.update_user_expense: Expense Name = {expense.name}, User = {user_name}, Amount = {amount}')
 
     # Balance
+    def calculate_user_expenses_amount(self, user_id):
+
+        amount = 0
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'user_expense' WHERE user_id=:user_id",
+                       {'user_id': user_id})
+
+        user_expense_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        for user_expense_tuple in user_expense_tuples:
+            amount += user_expense_tuple[4]
+
+        return amount
+
     def get_user_balance(self, user_id):
 
-        # Get user
-        # Get user expenses
-        # ...
-        # return balance for other users
-
-        other_users = []
         current_user = self.get_user(user_id)
         users = self.get_users()
 
+        # Get other users
+        other_users = []
         for user in users:
             if user.id != user_id:
                 other_users.append(user)
 
         del self.user_balances[:]
-        self.user_balances.extend(other_users)
+
+        # Populate balance data
+        for user in other_users:
+
+            # Calculate how much every other user spent in total
+            amount = self.calculate_user_expenses_amount(user.id)
+
+            balance_tuple = [None, amount, user.id, f'{user.first_name}']
+            balance = Balance(balance_tuple)
+
+            self.user_balances.append(balance)
 
     # Payment
     def add_payment(self, payment_tuple):
@@ -699,9 +725,14 @@ class UserBalanceModel(QtCore.QAbstractTableModel):
 
         if role == QtCore.Qt.DisplayRole:
 
+            balance = self.database.user_balances[row]
+            user = self.database.get_user(balance.user_id)
+
             if column == 0:
-                user = self.database.get_user(self.database.user_balances[row].id)
                 return f'{user.first_name} {user.last_name}'
+
+            if column == 1:
+                return balance.amount
 
 
 # Application
