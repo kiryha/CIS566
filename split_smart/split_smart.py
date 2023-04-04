@@ -645,7 +645,7 @@ class UserBalanceModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, parent):
 
-        return len(self.database.user_expenses)
+        return len(self.database.user_balances)
 
     def columnCount(self, parent):
 
@@ -660,17 +660,10 @@ class UserBalanceModel(QtCore.QAbstractTableModel):
         column = index.column()
 
         if role == QtCore.Qt.DisplayRole:
-            expense = self.database.get_expense(self.database.user_expenses[row].expense_id)
 
             if column == 0:
-                return expense.name
-
-            if column == 1:
-                user = self.database.get_user(self.database.user_expenses[row].user_id)
+                user = self.database.get_user(self.database.user_balances[row].id)
                 return f'{user.first_name} {user.last_name}'
-
-            if column == 2:
-                return self.database.user_expenses[row].amount
 
 
 # Application
@@ -705,7 +698,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.comGroupsFoExpense.currentIndexChanged.connect(self.populate_user_expenses)
         self.btnCreateExpense.clicked.connect(self.create_expense)
         # Balance Tracking
-        self.comGroupsFoExpense.currentIndexChanged.connect(self.populate_user_balance)
+        self.comUsersBalance.currentIndexChanged.connect(self.populate_user_balance)
 
         # Common
         self.btnSplitSmart.clicked.connect(self.test)
@@ -870,6 +863,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.populate_user_balance()
 
     def populate_group_users(self):
+        """
+        Show groups and group users in UI
+        """
 
         model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
@@ -881,6 +877,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.lisUsers.setModel(self.list_model_users)
 
     def populate_user_expenses(self):
+        """
+        Show in UI how much each user paid for all expenses of current group
+        """
 
         # Get group from UI
         model = self.comGroupsFoExpense.model().index(self.comGroupsFoExpense.currentIndex(), 0)
@@ -891,6 +890,10 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.tabExpenses.setModel(self.model_user_expense)
 
     def populate_user_balance(self):
+        """
+        Calculate how much current user (selected in UI) owes to all other users
+        assuming all users should spent equal amount.
+        """
 
         # Get user from UI
         model = self.comUsersBalance.model().index(self.comUsersBalance.currentIndex(), 0)
@@ -1037,6 +1040,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
 
 if __name__ == "__main__":
+
     root = os.path.dirname(os.path.abspath(__file__))
     app = QtWidgets.QApplication([])
     split_smart = SplitSmart()
