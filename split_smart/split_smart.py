@@ -63,6 +63,16 @@ class UserExpense:
         self.description = user_expense_tuple[5]
 
 
+class Payment:
+    def __init__(self, payment_tuple):
+        self.id = payment_tuple[0]
+        self.user_from_id = payment_tuple[1]
+        self.user_to_id = payment_tuple[2]
+        self.amount = payment_tuple[3]
+        self.date = payment_tuple[4]
+        self.description = payment_tuple[5]
+
+
 class Database:
     def __init__(self, sql_file_path):
         self.sql_file_path = sql_file_path
@@ -470,6 +480,34 @@ class Database:
         del self.user_balances[:]
         self.user_balances.extend(other_users)
 
+    # Payment
+    def add_payment(self, payment_tuple):
+
+        payment = Payment(payment_tuple)
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        # Add object to DB
+        cursor.execute("INSERT INTO 'payment' VALUES ("
+                       ":id,"
+                       ":user_from_id,"
+                       ":user_to_id,"
+                       ":amount,"
+                       ":date,"
+                       ":description)",
+
+                       {'id': cursor.lastrowid,
+                        'user_from_id': payment.user_from_id,
+                        'user_to_id': payment.user_to_id,
+                        'amount': payment.amount,
+                        'date': payment.date,
+                        'description': payment.description})
+
+        connection.commit()
+        payment.id = cursor.lastrowid  # Add database ID to the object
+        connection.close()
+
 
 # Data Models
 class ListModel(QtCore.QAbstractListModel):
@@ -699,6 +737,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.btnCreateExpense.clicked.connect(self.create_expense)
         # Balance Tracking
         self.comUsersBalance.currentIndexChanged.connect(self.populate_user_balance)
+        # Payment
+        self.btnSubmitPayment.clicked.connect(self.add_payment)
 
         # Common
         self.btnSplitSmart.clicked.connect(self.test)
@@ -754,6 +794,17 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
                         FOREIGN KEY(expense_id) REFERENCES "expense"(id),
                         FOREIGN KEY(user_id) REFERENCES "user"(id),
                         FOREIGN KEY(group_id) REFERENCES "group"(id)
+                        )''')
+
+        cursor.execute('''CREATE TABLE "payment" (
+                        id integer primary key autoincrement,
+                        user_from_id integer,
+                        group_to_id integer,
+                        amount real,
+                        date text,
+                        description text,
+                        FOREIGN KEY(user_from_id) REFERENCES "user"(id),
+                        FOREIGN KEY(group_to_id) REFERENCES "user"(id)
                         )''')
 
         connection.commit()
@@ -861,6 +912,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.populate_group_users()
         self.populate_user_expenses()
         self.populate_user_balance()
+        self.populate_payment()
 
     def populate_group_users(self):
         """
@@ -902,6 +954,14 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.database.get_user_balance(user.id)
         self.model_user_balance = UserBalanceModel(self.database)
         self.tabBalace.setModel(self.model_user_balance)
+
+    def populate_payment(self):
+        """
+        Show payment data in UI
+        """
+
+        self.comUserPayTo.setModel(self.combobox_model_users)
+        self.comUserPayFrom.setModel(self.combobox_model_users)
 
     # Users
     def sign_up_user(self):
@@ -976,6 +1036,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
     # Expenses
     def create_expense(self):
+        """
+        Register new expense entity in the database
+        """
 
         # Get data
         expense_name = self.linExpenceName.text()
@@ -1004,6 +1067,28 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         # Cleanup UI
         self.linExpenceName.clear()
         self.linExpenceAmount.clear()
+
+    # Payment
+    def add_payment(self):
+        """
+        Register payment in the database
+        """
+
+        # Get UI data
+        payment_amount = float(self.linPayAmount.text())
+        date = time.strftime('20%y_%m_%d_%H_%M', time.localtime(time.time()))
+
+        model_from = self.comUserPayFrom.model().index(self.comUserPayFrom.currentIndex(), 0)
+        model_to = self.comUserPayTo.model().index(self.comUserPayTo.currentIndex(), 0)
+        user_from = model_from.data(QtCore.Qt.UserRole + 1)
+        user_to = model_to.data(QtCore.Qt.UserRole + 1)
+
+        # Submit data
+        description = f'{user_from.first_name} >> {user_to.first_name}'
+        payment_tuple = [None, user_from.id, user_to.id, payment_amount, date, description]
+        self.database.add_payment(payment_tuple)
+
+        print(f'Payment ${payment_amount} From {user_from.first_name} To {user_to.first_name} submitted!')
 
     # General
     def user_notification(self, group_users, expense_name, expense_amount, group_name):

@@ -288,6 +288,63 @@ class Ui_SplitSmart(object):
         self.verticalLayout_5.addWidget(self.tabBalace)
 
         self.tabWidget.addTab(self.tab_4, "")
+        self.tab_5 = QWidget()
+        self.tab_5.setObjectName(u"tab_5")
+        self.verticalLayout_6 = QVBoxLayout(self.tab_5)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.splitter_12 = QSplitter(self.tab_5)
+        self.splitter_12.setObjectName(u"splitter_12")
+        self.splitter_12.setOrientation(Qt.Horizontal)
+        self.label_12 = QLabel(self.splitter_12)
+        self.label_12.setObjectName(u"label_12")
+        self.label_12.setMinimumSize(QSize(80, 0))
+        self.label_12.setMaximumSize(QSize(80, 16777215))
+        self.splitter_12.addWidget(self.label_12)
+        self.comUserPayFrom = QComboBox(self.splitter_12)
+        self.comUserPayFrom.setObjectName(u"comUserPayFrom")
+        self.splitter_12.addWidget(self.comUserPayFrom)
+
+        self.verticalLayout_6.addWidget(self.splitter_12)
+
+        self.splitter_15 = QSplitter(self.tab_5)
+        self.splitter_15.setObjectName(u"splitter_15")
+        self.splitter_15.setOrientation(Qt.Horizontal)
+        self.label_13 = QLabel(self.splitter_15)
+        self.label_13.setObjectName(u"label_13")
+        self.label_13.setMinimumSize(QSize(80, 0))
+        self.label_13.setMaximumSize(QSize(80, 16777215))
+        self.splitter_15.addWidget(self.label_13)
+        self.comUserPayTo = QComboBox(self.splitter_15)
+        self.comUserPayTo.setObjectName(u"comUserPayTo")
+        self.splitter_15.addWidget(self.comUserPayTo)
+
+        self.verticalLayout_6.addWidget(self.splitter_15)
+
+        self.splitter_14 = QSplitter(self.tab_5)
+        self.splitter_14.setObjectName(u"splitter_14")
+        self.splitter_14.setOrientation(Qt.Horizontal)
+        self.label_14 = QLabel(self.splitter_14)
+        self.label_14.setObjectName(u"label_14")
+        self.label_14.setMinimumSize(QSize(80, 0))
+        self.label_14.setMaximumSize(QSize(80, 16777215))
+        self.splitter_14.addWidget(self.label_14)
+        self.linPayAmount = QLineEdit(self.splitter_14)
+        self.linPayAmount.setObjectName(u"linPayAmount")
+        self.splitter_14.addWidget(self.linPayAmount)
+        self.btnSubmitPayment = QPushButton(self.splitter_14)
+        self.btnSubmitPayment.setObjectName(u"btnSubmitPayment")
+        self.splitter_14.addWidget(self.btnSubmitPayment)
+
+        self.verticalLayout_6.addWidget(self.splitter_14)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_6.addItem(self.verticalSpacer_3)
+
+        self.tabWidget.addTab(self.tab_5, "")
+        self.tab_6 = QWidget()
+        self.tab_6.setObjectName(u"tab_6")
+        self.tabWidget.addTab(self.tab_6, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
@@ -302,7 +359,7 @@ class Ui_SplitSmart(object):
 
         self.retranslateUi(SplitSmart)
 
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(4)
 
 
         QMetaObject.connectSlotsByName(SplitSmart)
@@ -332,5 +389,11 @@ class Ui_SplitSmart(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("SplitSmart", u"Expenses", None))
         self.label_10.setText(QCoreApplication.translate("SplitSmart", u"Select User", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("SplitSmart", u"Balance Tracking", None))
+        self.label_12.setText(QCoreApplication.translate("SplitSmart", u"Fro User: ", None))
+        self.label_13.setText(QCoreApplication.translate("SplitSmart", u"To User: ", None))
+        self.label_14.setText(QCoreApplication.translate("SplitSmart", u"Amount: ", None))
+        self.btnSubmitPayment.setText(QCoreApplication.translate("SplitSmart", u"Submit Payment", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QCoreApplication.translate("SplitSmart", u"Payment", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QCoreApplication.translate("SplitSmart", u"Reports", None))
     # retranslateUi
 
