@@ -1432,7 +1432,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Authenticate
         login = "random.t4@outlook.com"
-        password = 'starrs1234'
+        password = '****'
         session = smtplib.SMTP('smtp-mail.outlook.com', 587)
         session.starttls()
         session.login(login, password)
