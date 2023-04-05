@@ -277,6 +277,20 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_5.addWidget(self.splitter_11)
 
+        self.splitter_17 = QSplitter(self.tab_4)
+        self.splitter_17.setObjectName(u"splitter_17")
+        self.splitter_17.setOrientation(Qt.Horizontal)
+        self.label_19 = QLabel(self.splitter_17)
+        self.label_19.setObjectName(u"label_19")
+        self.label_19.setMinimumSize(QSize(120, 0))
+        self.label_19.setMaximumSize(QSize(120, 16777215))
+        self.splitter_17.addWidget(self.label_19)
+        self.comGroupsForBalance = QComboBox(self.splitter_17)
+        self.comGroupsForBalance.setObjectName(u"comGroupsForBalance")
+        self.splitter_17.addWidget(self.comGroupsForBalance)
+
+        self.verticalLayout_5.addWidget(self.splitter_17)
+
         self.tabBalace = QTableView(self.tab_4)
         self.tabBalace.setObjectName(u"tabBalace")
 
@@ -434,6 +448,7 @@ class Ui_SplitSmart(object):
         self.btnCreateExpense.setText(QCoreApplication.translate("SplitSmart", u"Create Expense for Current Group", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("SplitSmart", u"Expenses", None))
         self.label_10.setText(QCoreApplication.translate("SplitSmart", u"Select User", None))
+        self.label_19.setText(QCoreApplication.translate("SplitSmart", u"Select Group", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("SplitSmart", u"Balance Tracking", None))
         self.label_12.setText(QCoreApplication.translate("SplitSmart", u"Fro User: ", None))
         self.label_13.setText(QCoreApplication.translate("SplitSmart", u"To User: ", None))

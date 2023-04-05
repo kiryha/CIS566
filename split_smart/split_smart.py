@@ -7,6 +7,7 @@ import os
 import time
 import sqlite3
 import smtplib
+from collections import defaultdict
 from PySide2 import QtWidgets, QtCore, QtGui
 from ui import ui_main
 
@@ -91,7 +92,6 @@ class Database:
         self.groups = []
         # Dynamic data
         self.user_expenses = []
-        self.user_balances = []
         self.payments = []
         self.user_expense_report = []
 
@@ -488,6 +488,23 @@ class Database:
         if user_expense_tuple:
             return self.convert_to_user_expense([user_expense_tuple])[0]
 
+    def get_group_user_expenses(self, group_id):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'user_expense' WHERE group_id=:group_id",
+                       {'group_id': group_id})
+
+        user_expense_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        if user_expense_tuples:
+            user_expenses = self.convert_to_user_expense(user_expense_tuples)
+            return user_expenses
+
     def update_user_expense(self, user_expense_id, amount):
 
         connection = sqlite3.connect(self.sql_file_path)
@@ -511,49 +528,74 @@ class Database:
         print(f'>> database.update_user_expense: Expense Name = {expense.name}, User = {user_name}, Amount = {amount}')
 
     # Balance
-    def calculate_user_expenses_amount(self, user_id):
+    def calculate_balance(self, group_expenses, total_amount):
 
-        amount = 0
+        # Equal amount for any user
+        user_average = total_amount / len(group_expenses)
+        # Sort persons by the amounts they actually paid
+        items = list(group_expenses.items())
+        items.sort(key=lambda x: x[1])
 
-        connection = sqlite3.connect(self.sql_file_path)
-        cursor = connection.cursor()
+        # Iterate from both sides to get 2 parties for transfers
+        counterparty = reversed(items)
+        user_id_2, amount_2 = next(counterparty)
+        balance = {user_id: {} for user_id in group_expenses}
 
-        cursor.execute("SELECT * FROM 'user_expense' WHERE user_id=:user_id",
-                       {'user_id': user_id})
+        for i, (user_id_1, amount_1) in enumerate(items):
+            while amount_1 < user_average:  # This person needs to pay more
+                to_pay = user_average - amount_1
+                while amount_2 == user_average:  # Find counter party
+                    user_id_2, amount_2 = next(counterparty)
+                to_receive = amount_2 - user_average
+                transfer = min(to_pay, to_receive)  # What can be transferred
+                # Register the transfer
+                balance[user_id_1][user_id_2] = transfer
+                amount_1 += transfer
+                balance[user_id_2][user_id_1] = -transfer
+                amount_2 -= transfer
 
-        user_expense_tuples = cursor.fetchall()
+        return balance
 
-        connection.commit()
-        connection.close()
+    def get_summary_expenses(self, group_expenses, group_id):
+        """
+        Total amount of expenses for each user of current group
+        user_name = f'{self.get_user(user_id).first_name} {self.get_user(user_id).last_name}'
+        """
 
-        for user_expense_tuple in user_expense_tuples:
-            amount += user_expense_tuple[4]
+        total_amount = 0
 
-        return amount
+        group_user_expenses = self.get_group_user_expenses(group_id)
 
-    def get_user_balance(self, user_id):
+        if not group_user_expenses:
+            return
 
-        current_user = self.get_user(user_id)
-        users = self.get_users()
+        for group_user_expense in group_user_expenses:
+            user_id = group_user_expense.user_id
+            amount = group_user_expense.amount
 
-        # Get other users
-        other_users = []
-        for user in users:
-            if user.id != user_id:
-                other_users.append(user)
+            if amount != 0:
+                current_amount = group_expenses[user_id]
+                group_expenses[user_id] = current_amount + amount
+                total_amount += amount
 
-        del self.user_balances[:]
+        return total_amount
 
-        # Populate balance data
-        for user in other_users:
+    def get_balance(self, group_id):
+        """
+        Calculate amount of cash each user owes to other users of the group
+        balance = { user_id: {owes_user_id: amount}, ... }
+        """
 
-            # Calculate how much every other user spent in total
-            amount = self.calculate_user_expenses_amount(user.id)
+        # Create dictionary of group users expenses {user_id: expense_amount, ...}
+        group_expenses = defaultdict(float)
+        for user in self.get_group_users(group_id):
+            group_expenses[user.id] = 0
 
-            balance_tuple = [None, amount, user.id, f'{user.first_name}']
-            balance = Balance(balance_tuple)
+        # Calculate summary expenses for current group for each user and total group expense
+        total_amount = self.get_summary_expenses(group_expenses, group_id)
+        balance = self.calculate_balance(group_expenses, total_amount)
 
-            self.user_balances.append(balance)
+        return balance
 
     # Payment
     def add_payment(self, payment_tuple):
@@ -763,9 +805,10 @@ class UserExpenseModel(QtCore.QAbstractTableModel):
 
 
 class UserBalanceModel(QtCore.QAbstractTableModel):
-    def __init__(self, database, parent=None):
+    def __init__(self, database, user_balance, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self.database = database
+        self.user_balance = user_balance
         self.header = ['User Name', 'Owes Amount']
 
     def flags(self, index):
@@ -779,7 +822,7 @@ class UserBalanceModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, parent):
 
-        return len(self.database.user_balances)
+        return len(self.user_balance)
 
     def columnCount(self, parent):
 
@@ -795,14 +838,16 @@ class UserBalanceModel(QtCore.QAbstractTableModel):
 
         if role == QtCore.Qt.DisplayRole:
 
-            balance = self.database.user_balances[row]
-            user = self.database.get_user(balance.user_id)
+            # balance = self.database.user_balances[row]
+            user_id = list(self.user_balance.keys())[row]
+            amount = self.user_balance[user_id]
+            user = self.database.get_user(user_id)
 
             if column == 0:
                 return f'{user.first_name} {user.last_name}'
 
             if column == 1:
-                return balance.amount
+                return amount
 
 
 class PaymentModel(QtCore.QAbstractTableModel):
@@ -939,6 +984,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.btnCreateExpense.clicked.connect(self.create_expense)
         # Balance Tracking
         self.comUsersBalance.currentIndexChanged.connect(self.populate_user_balance)
+        self.comGroupsForBalance.currentIndexChanged.connect(self.populate_user_balance)
         # Payment
         self.btnSubmitPayment.clicked.connect(self.add_payment)
         # Reports
@@ -1160,13 +1206,18 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Get data from DB
         self.comUsersBalance.setModel(self.combobox_model_users)
+        self.comGroupsForBalance.setModel(self.model_groups)
 
-        # Get user from UI
-        model = self.comUsersBalance.model().index(self.comUsersBalance.currentIndex(), 0)
-        user = model.data(QtCore.Qt.UserRole + 1)
+        # Get user and group from UI
+        model_user = self.comUsersBalance.model().index(self.comUsersBalance.currentIndex(), 0)
+        model_group = self.comGroupsForBalance.model().index(self.comGroupsForBalance.currentIndex(), 0)
+        user = model_user.data(QtCore.Qt.UserRole + 1)
+        group = model_group.data(QtCore.Qt.UserRole + 1)
 
-        self.database.get_user_balance(user.id)
-        self.model_user_balance = UserBalanceModel(self.database)
+        # Calculate balance for group users
+        balance = self.database.get_balance(group.id)
+        user_balance = balance[user.id]
+        self.model_user_balance = UserBalanceModel(self.database, user_balance)
         self.tabBalace.setModel(self.model_user_balance)
 
     def populate_payment(self):
@@ -1190,9 +1241,10 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         user = model.data(QtCore.Qt.UserRole + 1)
 
         # Provide Balance report
-        self.database.get_user_balance(user.id)
-        self.model_user_balance = UserBalanceModel(self.database)
-        self.tabReportBalance.setModel(self.model_user_balance)
+        # balance = self.database.get_balance(group.id)
+        # user_balance = balance[user.id]
+        # self.model_user_balance = UserBalanceModel(self.database)
+        # self.tabReportBalance.setModel(self.model_user_balance)
 
         # Provide payment reports
         self.database.get_user_payments(user.id)
