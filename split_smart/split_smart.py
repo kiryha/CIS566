@@ -82,6 +82,8 @@ class Database:
         # Dynamic data
         self.user_expenses = []
         self.user_balances = []
+        self.payments = []
+        self.user_expense_report = []
 
         self.init_database()
 
@@ -127,6 +129,15 @@ class Database:
             user_expenses.append(UserExpense(user_expense_tuple))
 
         return user_expenses
+
+    def convert_to_payment(self, payment_tuples):
+
+        payments = []
+
+        for payment_tuple in payment_tuples:
+            payments.append(Payment(payment_tuple))
+
+        return payments
 
     # CRUD
     # Users
@@ -423,6 +434,26 @@ class Database:
             user_expenses = self.convert_to_user_expense(user_expense_tuples)
             self.user_expenses.extend(user_expenses)
 
+    def get_user_expenses_report(self, user_id):
+
+        # Clean up data
+        del self.user_expense_report[:]
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'user_expense' WHERE user_id=:user_id",
+                       {'user_id': user_id})
+
+        user_expense_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        if user_expense_tuples:
+            user_expenses = self.convert_to_user_expense(user_expense_tuples)
+            self.user_expense_report.extend(user_expenses)
+
     def get_user_expense(self, user_expense_id):
 
         connection = sqlite3.connect(self.sql_file_path)
@@ -533,6 +564,27 @@ class Database:
         connection.commit()
         payment.id = cursor.lastrowid  # Add database ID to the object
         connection.close()
+
+    def get_user_payments(self, user_id):
+
+        del self.payments[:]
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'payment' WHERE user_from_id=:user_from_id",
+                       {'user_from_id': user_id})
+
+        payment_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        if payment_tuples:
+            payments = self.convert_to_payment(payment_tuples)
+            self.payments.extend(payments)
+
+            return payments
 
 
 # Data Models
@@ -735,7 +787,106 @@ class UserBalanceModel(QtCore.QAbstractTableModel):
                 return balance.amount
 
 
+class PaymentModel(QtCore.QAbstractTableModel):
+    def __init__(self, database, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+        self.database = database
+        self.header = ['Recipient Name', 'Sent Amount']
+
+    def flags(self, index):
+
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def headerData(self, column, orientation, role):
+
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self.header[column]
+
+    def rowCount(self, parent):
+
+        return len(self.database.payments)
+
+    def columnCount(self, parent):
+
+        return len(self.header)
+
+    def data(self, index, role):
+
+        if not index.isValid():
+            return
+
+        row = index.row()
+        column = index.column()
+
+        if role == QtCore.Qt.DisplayRole:
+
+            payment = self.database.payments[row]
+            user_to = self.database.get_user(payment.user_to_id)
+
+            if column == 0:
+                return f'{user_to.first_name} {user_to.last_name}'
+
+            if column == 1:
+                return payment.amount
+
+
+class ExpenseReportModel(QtCore.QAbstractTableModel):
+    def __init__(self, database, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+        self.database = database
+        self.header = ['Expense Name', 'Group', 'Amount', 'User Paid']
+
+    def flags(self, index):
+
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def headerData(self, column, orientation, role):
+
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self.header[column]
+
+    def rowCount(self, parent):
+
+        return len(self.database.user_expense_report)
+
+    def columnCount(self, parent):
+
+        return len(self.header)
+
+    def data(self, index, role):
+
+        if not index.isValid():
+            return
+
+        row = index.row()
+        column = index.column()
+
+        if role == QtCore.Qt.DisplayRole:
+
+            user_expense = self.database.user_expense_report[row]
+            expense = self.database.get_expense(user_expense.expense_id)
+            group = self.database.get_group(user_expense.group_id)
+
+            if column == 0:
+                return expense.name
+
+            if column == 1:
+                return group.name
+
+            if column == 2:
+                return expense.amount
+
+            if column == 3:
+                return user_expense.amount
+
+
 # Application
+class AlignDelegate(QtWidgets.QItemDelegate):
+    def paint(self, painter, option, index):
+        option.displayAlignment = QtCore.Qt.AlignCenter
+        QtWidgets.QItemDelegate.paint(self, painter, option, index)
+
+
 class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
     def __init__(self):
         super(SplitSmart, self).__init__()
@@ -752,6 +903,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.model_group_users = None
         self.model_user_expense = None
         self.model_user_balance = None
+        self.model_payment = None
+        self.model_user_expense_report = None
 
         self.init_ui()
 
@@ -770,9 +923,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.comUsersBalance.currentIndexChanged.connect(self.populate_user_balance)
         # Payment
         self.btnSubmitPayment.clicked.connect(self.add_payment)
-
-        # Common
-        self.btnSplitSmart.clicked.connect(self.test)
+        # Reports
+        self.comUsersReport.currentIndexChanged.connect(self.populate_report)
 
     # Init
     def create_database(self, sql_file_path):
@@ -925,31 +1077,38 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         table.horizontalHeader().setStretchLastSection(True)
+        table.setItemDelegate(AlignDelegate())
 
     def init_ui(self):
 
+        # Setup tables look and feel
         self.setup_table(self.tabExpenses)
         self.setup_table(self.tabBalace)
+        self.setup_table(self.tabReportBalance)
+        self.setup_table(self.tabReportExpenses)
+        self.setup_table(self.tabReportPayments)
 
         # Groups data
         self.model_groups = ComboboxModel(self.database, 'groups')
-        self.comGroups.setModel(self.model_groups)
-        self.comGroupsFoExpense.setModel(self.model_groups)
 
         # Users data
         self.combobox_model_users = ComboboxModel(self.database, 'users')
-        self.comUsersBalance.setModel(self.combobox_model_users)
 
         self.populate_group_users()
         self.populate_user_expenses()
         self.populate_user_balance()
         self.populate_payment()
+        self.populate_report()
 
     def populate_group_users(self):
         """
         Show groups and group users in UI
         """
 
+        # Load data to UI from DB
+        self.comGroups.setModel(self.model_groups)
+
+        # Get Data from UI
         model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
 
@@ -964,6 +1123,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         Show in UI how much each user paid for all expenses of current group
         """
 
+        # Load data from DB
+        self.comGroupsFoExpense.setModel(self.model_groups)
+
         # Get group from UI
         model = self.comGroupsFoExpense.model().index(self.comGroupsFoExpense.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
@@ -977,6 +1139,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         Calculate how much current user (selected in UI) owes to all other users
         assuming all users should spent equal amount.
         """
+
+        # Get data from DB
+        self.comUsersBalance.setModel(self.combobox_model_users)
 
         # Get user from UI
         model = self.comUsersBalance.model().index(self.comUsersBalance.currentIndex(), 0)
@@ -993,6 +1158,33 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         self.comUserPayTo.setModel(self.combobox_model_users)
         self.comUserPayFrom.setModel(self.combobox_model_users)
+
+    def populate_report(self):
+        """
+        Show payment data in UI
+        """
+
+        # Load data from DB
+        self.comUsersReport.setModel(self.combobox_model_users)
+
+        # Get user from UI
+        model = self.comUsersReport.model().index(self.comUsersReport.currentIndex(), 0)
+        user = model.data(QtCore.Qt.UserRole + 1)
+
+        # Provide Balance report
+        self.database.get_user_balance(user.id)
+        self.model_user_balance = UserBalanceModel(self.database)
+        self.tabReportBalance.setModel(self.model_user_balance)
+
+        # Provide payment reports
+        self.database.get_user_payments(user.id)
+        self.model_payment = PaymentModel(self.database)
+        self.tabReportPayments.setModel(self.model_payment)
+
+        # Provide Expense reports
+        self.database.get_user_expenses_report(user.id)
+        self.model_user_expense_report = ExpenseReportModel(self.database)
+        self.tabReportExpenses.setModel(self.model_user_expense_report)
 
     # Users
     def sign_up_user(self):
@@ -1149,10 +1341,6 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         session.quit()
 
         print(f'>> Notification sent to all group users!')
-
-    def test(self):
-
-        print('Split Smart')
 
 
 if __name__ == "__main__":

@@ -16,16 +16,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QPushButton" name="btnSplitSmart">
-      <property name="text">
-       <string>Split Smart</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_1">
        <attribute name="title">
@@ -54,7 +47,11 @@
             <string>Name</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="linSignupName"/>
+          <widget class="QLineEdit" name="linSignupName">
+           <property name="placeholderText">
+            <string>Kiryha</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -79,7 +76,11 @@
             <string>Last Name</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="linSignupLastName"/>
+          <widget class="QLineEdit" name="linSignupLastName">
+           <property name="placeholderText">
+            <string>Krysko</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -104,7 +105,11 @@
             <string>Email</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="linSignupEmail"/>
+          <widget class="QLineEdit" name="linSignupEmail">
+           <property name="placeholderText">
+            <string>coder@umich.edu</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -129,7 +134,11 @@
             <string>Password</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="linSignupPassword"/>
+          <widget class="QLineEdit" name="linSignupPassword">
+           <property name="placeholderText">
+            <string>**********</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -174,7 +183,11 @@
             <string>Email</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="linLoginEmail"/>
+          <widget class="QLineEdit" name="linLoginEmail">
+           <property name="placeholderText">
+            <string>coder@umich.edu</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -199,7 +212,11 @@
             <string>Password</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="linLoginPassword"/>
+          <widget class="QLineEdit" name="linLoginPassword">
+           <property name="placeholderText">
+            <string>**********</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -586,6 +603,63 @@
        <attribute name="title">
         <string>Reports</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <widget class="QSplitter" name="splitter_16">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QLabel" name="label_15">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Select User</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="comUsersReport"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>User Expenses:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableView" name="tabReportExpenses"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>User Balance:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableView" name="tabReportBalance"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>User Payments</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableView" name="tabReportPayments"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

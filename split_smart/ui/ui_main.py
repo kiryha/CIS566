@@ -22,11 +22,6 @@ class Ui_SplitSmart(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.btnSplitSmart = QPushButton(self.centralwidget)
-        self.btnSplitSmart.setObjectName(u"btnSplitSmart")
-
-        self.verticalLayout.addWidget(self.btnSplitSmart)
-
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tab_1 = QWidget()
@@ -344,6 +339,52 @@ class Ui_SplitSmart(object):
         self.tabWidget.addTab(self.tab_5, "")
         self.tab_6 = QWidget()
         self.tab_6.setObjectName(u"tab_6")
+        self.verticalLayout_7 = QVBoxLayout(self.tab_6)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.splitter_16 = QSplitter(self.tab_6)
+        self.splitter_16.setObjectName(u"splitter_16")
+        self.splitter_16.setOrientation(Qt.Horizontal)
+        self.label_15 = QLabel(self.splitter_16)
+        self.label_15.setObjectName(u"label_15")
+        self.label_15.setMinimumSize(QSize(120, 0))
+        self.label_15.setMaximumSize(QSize(120, 16777215))
+        self.splitter_16.addWidget(self.label_15)
+        self.comUsersReport = QComboBox(self.splitter_16)
+        self.comUsersReport.setObjectName(u"comUsersReport")
+        self.splitter_16.addWidget(self.comUsersReport)
+
+        self.verticalLayout_7.addWidget(self.splitter_16)
+
+        self.label_16 = QLabel(self.tab_6)
+        self.label_16.setObjectName(u"label_16")
+
+        self.verticalLayout_7.addWidget(self.label_16)
+
+        self.tabReportExpenses = QTableView(self.tab_6)
+        self.tabReportExpenses.setObjectName(u"tabReportExpenses")
+
+        self.verticalLayout_7.addWidget(self.tabReportExpenses)
+
+        self.label_17 = QLabel(self.tab_6)
+        self.label_17.setObjectName(u"label_17")
+
+        self.verticalLayout_7.addWidget(self.label_17)
+
+        self.tabReportBalance = QTableView(self.tab_6)
+        self.tabReportBalance.setObjectName(u"tabReportBalance")
+
+        self.verticalLayout_7.addWidget(self.tabReportBalance)
+
+        self.label_18 = QLabel(self.tab_6)
+        self.label_18.setObjectName(u"label_18")
+
+        self.verticalLayout_7.addWidget(self.label_18)
+
+        self.tabReportPayments = QTableView(self.tab_6)
+        self.tabReportPayments.setObjectName(u"tabReportPayments")
+
+        self.verticalLayout_7.addWidget(self.tabReportPayments)
+
         self.tabWidget.addTab(self.tab_6, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
@@ -359,7 +400,7 @@ class Ui_SplitSmart(object):
 
         self.retranslateUi(SplitSmart)
 
-        self.tabWidget.setCurrentIndex(4)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(SplitSmart)
@@ -367,14 +408,19 @@ class Ui_SplitSmart(object):
 
     def retranslateUi(self, SplitSmart):
         SplitSmart.setWindowTitle(QCoreApplication.translate("SplitSmart", u"Split Smart", None))
-        self.btnSplitSmart.setText(QCoreApplication.translate("SplitSmart", u"Split Smart", None))
         self.label_5.setText(QCoreApplication.translate("SplitSmart", u"Name", None))
+        self.linSignupName.setPlaceholderText(QCoreApplication.translate("SplitSmart", u"Kiryha", None))
         self.label_6.setText(QCoreApplication.translate("SplitSmart", u"Last Name", None))
+        self.linSignupLastName.setPlaceholderText(QCoreApplication.translate("SplitSmart", u"Krysko", None))
         self.label_4.setText(QCoreApplication.translate("SplitSmart", u"Email", None))
+        self.linSignupEmail.setPlaceholderText(QCoreApplication.translate("SplitSmart", u"coder@umich.edu", None))
         self.label_3.setText(QCoreApplication.translate("SplitSmart", u"Password", None))
+        self.linSignupPassword.setPlaceholderText(QCoreApplication.translate("SplitSmart", u"**********", None))
         self.btnSignUp.setText(QCoreApplication.translate("SplitSmart", u"Sign Up", None))
         self.label.setText(QCoreApplication.translate("SplitSmart", u"Email", None))
+        self.linLoginEmail.setPlaceholderText(QCoreApplication.translate("SplitSmart", u"coder@umich.edu", None))
         self.label_2.setText(QCoreApplication.translate("SplitSmart", u"Password", None))
+        self.linLoginPassword.setPlaceholderText(QCoreApplication.translate("SplitSmart", u"**********", None))
         self.btnLogIn.setText(QCoreApplication.translate("SplitSmart", u"Log In", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QCoreApplication.translate("SplitSmart", u"Users", None))
         self.label_7.setText(QCoreApplication.translate("SplitSmart", u"Group Name", None))
@@ -394,6 +440,10 @@ class Ui_SplitSmart(object):
         self.label_14.setText(QCoreApplication.translate("SplitSmart", u"Amount: ", None))
         self.btnSubmitPayment.setText(QCoreApplication.translate("SplitSmart", u"Submit Payment", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QCoreApplication.translate("SplitSmart", u"Payment", None))
+        self.label_15.setText(QCoreApplication.translate("SplitSmart", u"Select User", None))
+        self.label_16.setText(QCoreApplication.translate("SplitSmart", u"User Expenses:", None))
+        self.label_17.setText(QCoreApplication.translate("SplitSmart", u"User Balance:", None))
+        self.label_18.setText(QCoreApplication.translate("SplitSmart", u"User Payments", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QCoreApplication.translate("SplitSmart", u"Reports", None))
     # retranslateUi
 
