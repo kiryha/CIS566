@@ -1431,7 +1431,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         print(f'>> Sending expense notification...')
 
         # Authenticate
-        login = "random.t4@outlook.com"
+        login = "****4@outlook.com"
         password = '****'
         session = smtplib.SMTP('smtp-mail.outlook.com', 587)
         session.starttls()
