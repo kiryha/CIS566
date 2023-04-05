@@ -98,6 +98,9 @@ class Database:
         self.init_database()
 
     def get_instance(sql_file_path):
+        """
+        Singleton
+        """
 
         # Get Singe Database() instance
         if Database.__instance is None:
@@ -106,6 +109,9 @@ class Database:
         return Database.__instance
 
     def init_database(self):
+        """
+        Get core data from DB
+        """
 
         self.users.extend(self.get_users())
         self.groups.extend(self.get_groups())
@@ -160,6 +166,9 @@ class Database:
     # CRUD
     # Users
     def add_user(self, user_tuple):
+        """
+        Add new user
+        """
 
         user = User(user_tuple)
 
@@ -193,6 +202,9 @@ class Database:
         return user
 
     def get_user(self, user_id):
+        """
+        Get user by user id
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -208,6 +220,9 @@ class Database:
             return self.convert_to_user([user_tuple])[0]
 
     def get_users(self):
+        """
+        Get all users
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -236,6 +251,9 @@ class Database:
 
     # Groups
     def add_group(self, group_tuple):
+        """
+        Add new group to the database
+        """
 
         group = Group(group_tuple)
 
@@ -263,6 +281,9 @@ class Database:
         return group
 
     def get_group(self, group_id):
+        """
+        Get group data by group ID
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -279,6 +300,9 @@ class Database:
             return self.convert_to_group([group_tuple])[0]
 
     def get_user_groups(self, user_id):
+        """
+        Get groups linked to user by user ID
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -303,6 +327,9 @@ class Database:
         return user_groups
 
     def get_groups(self):
+        """
+        Get all groups
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -317,6 +344,9 @@ class Database:
             return self.convert_to_group(group_tuples)
 
     def add_user_to_group(self, user_id, group_id):
+        """
+        Add user to group by user ID
+        """
 
         user_name = f'{self.get_user(user_id).first_name} {self.get_user(user_id).last_name}'
         group_name = self.get_group(group_id).name
@@ -342,6 +372,9 @@ class Database:
         print(f'>> database.add_user_to_group: User| Group Names = {user_name} | {group_name}')
 
     def remove_user_from_group(self, user_id, group_id):
+        """
+        Break connection between user and group
+        """
 
         user_name = f'{self.get_user(user_id).first_name} {self.get_user(user_id).last_name}'
         group_name = self.get_group(group_id).name
@@ -361,6 +394,9 @@ class Database:
         print(f'>> database.remove_user_from_group: User| Group Names = {user_name} | {group_name}')
 
     def get_group_users(self, group_id):
+        """
+        Get all users for current group
+        """
 
         group_users = []
 
@@ -384,6 +420,9 @@ class Database:
 
     # Expenses
     def add_expense(self, expense_tuple, group_id):
+        """
+        Create expense record
+        """
 
         expense = Expense(expense_tuple)
         group_name = self.get_group(group_id).name
@@ -419,6 +458,9 @@ class Database:
             self.add_user_expense(user_expense_tuple)
 
     def get_expense(self, expense_id):
+        """
+        Get expense by ID
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -435,6 +477,9 @@ class Database:
             return self.convert_to_expense([expense_tuple])[0]
 
     def add_user_expense(self, user_expense_tuple):
+        """
+        Add expense for user
+        """
 
         user_expense = UserExpense(user_expense_tuple)
         expense_name = self.get_expense(user_expense.expense_id).name
@@ -470,6 +515,9 @@ class Database:
         return user_expense
 
     def get_user_expenses(self, group_id):
+        """
+        Get all user expenses
+        """
 
         # Clean up data
         del self.user_expenses[:]
@@ -490,6 +538,9 @@ class Database:
             self.user_expenses.extend(user_expenses)
 
     def get_user_expenses_report(self, user_id):
+        """
+        Get all user expenses
+        """
 
         # Clean up data
         del self.user_expense_report[:]
@@ -510,6 +561,9 @@ class Database:
             self.user_expense_report.extend(user_expenses)
 
     def get_user_expense(self, user_expense_id):
+        """
+        Get and return all user expenses
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -526,6 +580,9 @@ class Database:
             return self.convert_to_user_expense([user_expense_tuple])[0]
 
     def get_group_user_expenses(self, group_id):
+        """
+        Get all expenses related to group
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -543,6 +600,9 @@ class Database:
             return user_expenses
 
     def update_user_expense(self, user_expense_id, amount):
+        """
+        Modify user expenses
+        """
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -566,6 +626,9 @@ class Database:
 
     # Balance
     def calculate_balance(self, group_expenses, total_amount):
+        """
+        Calculate how much user owes to other users within one group
+        """
 
         # Equal amount for any user
         user_average = total_amount / len(group_expenses)
@@ -636,6 +699,9 @@ class Database:
 
     # Payment
     def add_payment(self, payment_tuple):
+        """
+        Register payment transaction from user to user
+        """
 
         payment = Payment(payment_tuple)
 
@@ -663,6 +729,9 @@ class Database:
         connection.close()
 
     def get_user_payments(self, user_id):
+        """
+        Retrieve all user's payments
+        """
 
         del self.payments[:]
 
@@ -1097,6 +1166,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         connection.close()
 
     def populate_database(self, sql_file_path):
+        """
+        Add initial data to the database
+        """
 
         populate_data = {
             'users': [
@@ -1169,12 +1241,18 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
             connection.close()
 
     def init_database(self):
+        """
+        Create Database with first launch
+        """
 
         if not os.path.exists(self.sql_file_path):
             self.create_database(self.sql_file_path)
             self.populate_database(self.sql_file_path)
 
     def setup_table(self, table):
+        """
+        Setup table look and feel
+        """
 
         table.verticalHeader().hide()
         table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -1183,6 +1261,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         table.setItemDelegate(AlignDelegate())
 
     def init_ui(self):
+        """
+        Populate data from Database to UI
+        """
 
         # Setup tables look and feel
         self.setup_table(self.tabExpenses)
@@ -1300,6 +1381,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
     # Users
     def sign_up_user(self):
+        """
+        Add user to the database
+        """
 
         # Get data
         user_first_name = self.linSignupName.text()
@@ -1319,6 +1403,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
     # Groups
     def create_group(self):
+        """
+        Create empty group
+        """
 
         group_name = self.linGroupName.text()
         group_tuple = [None, group_name, '']
@@ -1330,6 +1417,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.linGroupName.clear()
 
     def add_users_to_group(self):
+        """
+        Add users to group
+        """
 
         self.model_group_users.layoutAboutToBeChanged.emit()
 
@@ -1350,6 +1440,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.model_group_users.layoutChanged.emit()
 
     def remove_users_from_group(self):
+        """
+        Delete users from group
+        """
 
         self.model_group_users.layoutAboutToBeChanged.emit()
 
@@ -1427,6 +1520,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
     # General
     def user_notification(self, group_users, expense_name, expense_amount, group_name):
+        """
+        Sent notification to group users about created expense
+        """
 
         print(f'>> Sending expense notification...')
 
