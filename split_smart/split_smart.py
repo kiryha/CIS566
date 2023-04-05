@@ -221,6 +221,19 @@ class Database:
         if user_tuples:
             return self.convert_to_user(user_tuples)
 
+    def get_inverted_users(self, user_id):
+        """
+        Get list of all users except current
+        """
+
+        users = self.get_users()
+
+        # Get other users
+        other_users = []
+        for user in users:
+            if user.id != user_id:
+                other_users.append(user)
+
     # Groups
     def add_group(self, group_tuple):
 
@@ -264,6 +277,30 @@ class Database:
 
         if group_tuple:
             return self.convert_to_group([group_tuple])[0]
+
+    def get_user_groups(self, user_id):
+
+        connection = sqlite3.connect(self.sql_file_path)
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM 'group_user' WHERE user_id=:user_id",
+                       {'user_id': user_id})
+
+        group_user_tuples = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        if not group_user_tuples:
+            return
+
+        user_groups = []
+        for group_user_tuple in group_user_tuples:
+            group_id = group_user_tuple[2]
+            group = self.get_group(group_id)
+            user_groups.append(group)
+
+        return user_groups
 
     def get_groups(self):
 
@@ -968,6 +1005,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.model_user_balance = None
         self.model_payment = None
         self.model_user_expense_report = None
+        self.model_user_balance_report = None
 
         self.init_ui()
 
@@ -989,6 +1027,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.btnSubmitPayment.clicked.connect(self.add_payment)
         # Reports
         self.comUsersReport.currentIndexChanged.connect(self.populate_report)
+        self.comGroupsForReport.currentIndexChanged.connect(self.populate_report)
 
     # Init
     def create_database(self, sql_file_path):
@@ -1235,16 +1274,19 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Load data from DB
         self.comUsersReport.setModel(self.combobox_model_users)
+        self.comGroupsForReport.setModel(self.model_groups)
 
         # Get user from UI
-        model = self.comUsersReport.model().index(self.comUsersReport.currentIndex(), 0)
-        user = model.data(QtCore.Qt.UserRole + 1)
+        model_user = self.comUsersReport.model().index(self.comUsersReport.currentIndex(), 0)
+        model_group = self.comGroupsForReport.model().index(self.comGroupsForReport.currentIndex(), 0)
+        user = model_user.data(QtCore.Qt.UserRole + 1)
+        group = model_group.data(QtCore.Qt.UserRole + 1)
 
         # Provide Balance report
-        # balance = self.database.get_balance(group.id)
-        # user_balance = balance[user.id]
-        # self.model_user_balance = UserBalanceModel(self.database)
-        # self.tabReportBalance.setModel(self.model_user_balance)
+        balance = self.database.get_balance(group.id)
+        user_balance = balance[user.id]
+        self.model_user_balance = UserBalanceModel(self.database, user_balance)
+        self.tabReportBalance.setModel(self.model_user_balance)
 
         # Provide payment reports
         self.database.get_user_payments(user.id)

@@ -384,6 +384,20 @@ class Ui_SplitSmart(object):
 
         self.verticalLayout_7.addWidget(self.label_17)
 
+        self.splitter_18 = QSplitter(self.tab_6)
+        self.splitter_18.setObjectName(u"splitter_18")
+        self.splitter_18.setOrientation(Qt.Horizontal)
+        self.label_20 = QLabel(self.splitter_18)
+        self.label_20.setObjectName(u"label_20")
+        self.label_20.setMinimumSize(QSize(120, 0))
+        self.label_20.setMaximumSize(QSize(120, 16777215))
+        self.splitter_18.addWidget(self.label_20)
+        self.comGroupsForReport = QComboBox(self.splitter_18)
+        self.comGroupsForReport.setObjectName(u"comGroupsForReport")
+        self.splitter_18.addWidget(self.comGroupsForReport)
+
+        self.verticalLayout_7.addWidget(self.splitter_18)
+
         self.tabReportBalance = QTableView(self.tab_6)
         self.tabReportBalance.setObjectName(u"tabReportBalance")
 
@@ -458,6 +472,7 @@ class Ui_SplitSmart(object):
         self.label_15.setText(QCoreApplication.translate("SplitSmart", u"Select User", None))
         self.label_16.setText(QCoreApplication.translate("SplitSmart", u"User Expenses:", None))
         self.label_17.setText(QCoreApplication.translate("SplitSmart", u"User Balance:", None))
+        self.label_20.setText(QCoreApplication.translate("SplitSmart", u"Select Group", None))
         self.label_18.setText(QCoreApplication.translate("SplitSmart", u"User Payments", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QCoreApplication.translate("SplitSmart", u"Reports", None))
     # retranslateUi
