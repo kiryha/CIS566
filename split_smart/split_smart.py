@@ -1,5 +1,6 @@
 """
 CIS 566 Term Project: Split Smart - share expenses
+Python 3.7 + Pyside 2
 """
 
 import os
@@ -74,8 +75,17 @@ class Payment:
 
 
 class Database:
+    __instance = None
+
     def __init__(self, sql_file_path):
         self.sql_file_path = sql_file_path
+
+        # Singleton setup
+        if Database.__instance is not None:
+            return
+        else:
+            Database.__instance = self
+
         # Static data
         self.users = []
         self.groups = []
@@ -86,6 +96,14 @@ class Database:
         self.user_expense_report = []
 
         self.init_database()
+
+    def get_instance(sql_file_path):
+
+        # Get Singe Database() instance
+        if Database.__instance is None:
+            Database(sql_file_path)
+
+        return Database.__instance
 
     def init_database(self):
 
@@ -894,7 +912,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         self.sql_file_path = f'{root}/database/data.db'
         self.init_database()
-        self.database = Database(self.sql_file_path)
+        self.database = Database.get_instance(self.sql_file_path)
 
         # Data Models
         self.model_groups = None
