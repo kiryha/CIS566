@@ -75,6 +75,29 @@ class Payment:
         self.description = payment_tuple[5]
 
 
+# Database controller
+class EntityFactory:
+    @staticmethod
+    def create_user(user_tuple):
+        return User(user_tuple)
+
+    @staticmethod
+    def create_group(group_tuple):
+        return Group(group_tuple)
+
+    @staticmethod
+    def create_expense(expense_tuple):
+        return Expense(expense_tuple)
+
+    @staticmethod
+    def create_user_expense(user_expense_tuples):
+        return UserExpense(user_expense_tuples)
+
+    @staticmethod
+    def create_payment(payment_tuples):
+        return Payment(payment_tuples)
+
+
 class Database:
     __instance = None
 
@@ -122,7 +145,7 @@ class Database:
         users = []
 
         for user_tuple in user_tuples:
-            user = User(user_tuple)
+            user = EntityFactory.create_user(user_tuple)
             users.append(user)
 
         return users
@@ -132,7 +155,8 @@ class Database:
         groups = []
 
         for group_tuple in group_tuples:
-            groups.append(Group(group_tuple))
+            group = EntityFactory.create_group(group_tuple)
+            groups.append(group)
 
         return groups
 
@@ -141,7 +165,8 @@ class Database:
         expenses = []
 
         for expense_tuple in expense_tuples:
-            expenses.append(Expense(expense_tuple))
+            expense = EntityFactory.create_expense(expense_tuple)
+            expenses.append(expense)
 
         return expenses
 
@@ -150,7 +175,8 @@ class Database:
         user_expenses = []
 
         for user_expense_tuple in user_expense_tuples:
-            user_expenses.append(UserExpense(user_expense_tuple))
+            user_expense = EntityFactory.create_user_expense(user_expense_tuple)
+            user_expenses.append(user_expense)
 
         return user_expenses
 
@@ -159,7 +185,8 @@ class Database:
         payments = []
 
         for payment_tuple in payment_tuples:
-            payments.append(Payment(payment_tuple))
+            payment = EntityFactory.create_payment(payment_tuple)
+            payments.append(payment)
 
         return payments
 
@@ -170,7 +197,7 @@ class Database:
         Add new user
         """
 
-        user = User(user_tuple)
+        user = EntityFactory.create_user(user_tuple)
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -255,7 +282,7 @@ class Database:
         Add new group to the database
         """
 
-        group = Group(group_tuple)
+        group = EntityFactory.create_group(group_tuple)
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
@@ -424,7 +451,7 @@ class Database:
         Create expense record
         """
 
-        expense = Expense(expense_tuple)
+        expense = EntityFactory.create_expense(expense_tuple)
         group_name = self.get_group(group_id).name
 
         connection = sqlite3.connect(self.sql_file_path)
@@ -481,7 +508,7 @@ class Database:
         Add expense for user
         """
 
-        user_expense = UserExpense(user_expense_tuple)
+        user_expense = EntityFactory.create_user_expense(user_expense_tuple)
         expense_name = self.get_expense(user_expense.expense_id).name
         user_name = f'{self.get_user(user_expense.user_id).first_name} {self.get_user(user_expense.user_id).last_name}'
 
@@ -713,7 +740,7 @@ class Database:
         Register payment transaction from user to user
         """
 
-        payment = Payment(payment_tuple)
+        payment = EntityFactory.create_payment(payment_tuple)
 
         connection = sqlite3.connect(self.sql_file_path)
         cursor = connection.cursor()
