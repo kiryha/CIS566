@@ -1336,8 +1336,15 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Calculate balance for group users
         balance = self.database.get_balance(group.id)
-        user_balance = balance[user.id]
-        self.model_user_balance = UserBalanceModel(self.database, user_balance)
+
+        if user.id in balance.keys():
+            user_balance = balance[user.id]
+            self.model_user_balance = UserBalanceModel(self.database, user_balance)
+
+        else:
+            # Clear UI data
+            self.model_user_balance = UserBalanceModel(self.database, {})
+
         self.tabBalace.setModel(self.model_user_balance)
 
     def populate_payment(self):
