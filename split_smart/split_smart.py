@@ -30,22 +30,6 @@ class Group:
         self.description = group_tuple[2]
 
 
-class GroupUser:
-    def __init__(self):
-        self.id = None
-        self.user_id = None
-        self.group_id = None
-        self.description = ''
-
-
-class Balance:
-    def __init__(self, balance_tuple):
-        self.id = balance_tuple[0]
-        self.amount = balance_tuple[1]
-        self.user_id = balance_tuple[2]
-        self.description = balance_tuple[3]
-
-
 class Expense:
     def __init__(self, expense_tuple):
         self.id = expense_tuple[0]
