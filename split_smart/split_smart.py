@@ -688,11 +688,21 @@ class Database:
 
         # Create dictionary of group users expenses {user_id: expense_amount, ...}
         group_expenses = defaultdict(float)
-        for user in self.get_group_users(group_id):
+
+        group_users = self.get_group_users(group_id)
+
+        if not group_users:
+            return
+
+        for user in group_users:
             group_expenses[user.id] = 0
 
         # Calculate summary expenses for current group for each user and total group expense
         total_amount = self.get_summary_expenses(group_expenses, group_id)
+
+        if not total_amount:
+            return
+
         balance = self.calculate_balance(group_expenses, total_amount)
 
         return balance
@@ -1337,6 +1347,11 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         # Calculate balance for group users
         balance = self.database.get_balance(group.id)
 
+        if not balance:
+            self.model_user_balance = UserBalanceModel(self.database, {})
+            self.tabBalace.setModel(self.model_user_balance)
+            return
+
         if user.id in balance.keys():
             user_balance = balance[user.id]
             self.model_user_balance = UserBalanceModel(self.database, user_balance)
@@ -1372,9 +1387,10 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Provide Balance report
         balance = self.database.get_balance(group.id)
-        user_balance = balance[user.id]
-        self.model_user_balance = UserBalanceModel(self.database, user_balance)
-        self.tabReportBalance.setModel(self.model_user_balance)
+        if balance:
+            user_balance = balance[user.id]
+            self.model_user_balance = UserBalanceModel(self.database, user_balance)
+            self.tabReportBalance.setModel(self.model_user_balance)
 
         # Provide payment reports
         self.database.get_user_payments(user.id)
@@ -1408,6 +1424,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.linSignupEmail.clear()
         self.linSignupPassword.clear()
 
+        message = f'User {user_first_name} {user_last_name} created!'
+        self.statusbar.showMessage(message)
+
     # Groups
     def create_group(self):
         """
@@ -1423,6 +1442,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         self.linGroupName.clear()
 
+        message = f'Group {group_name} created!'
+        self.statusbar.showMessage(message)
+
     def add_users_to_group(self):
         """
         Add users to group
@@ -1432,6 +1454,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Get data from UI
         users = []
+        user_names = []
         model_indexes = self.lisUsers.selectedIndexes()
         model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
@@ -1439,12 +1462,16 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         for model_index in model_indexes:
             obj = model_index.data(QtCore.Qt.UserRole + 1)
             users.append(obj)
+            user_names.append(obj.first_name)
 
         # Update database
         for user in users:
             self.database.add_user_to_group(user.id, group.id)
 
         self.model_group_users.layoutChanged.emit()
+
+        message = f'Users {user_names} added to {group.name}!'
+        self.statusbar.showMessage(message)
 
     def remove_users_from_group(self):
         """
@@ -1455,6 +1482,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
 
         # Get data from UI
         users = []
+        user_names = []
         model_indexes = self.lisGroupUsers.selectedIndexes()
         model = self.comGroups.model().index(self.comGroups.currentIndex(), 0)
         group = model.data(QtCore.Qt.UserRole + 1)
@@ -1462,12 +1490,16 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         for model_index in model_indexes:
             obj = model_index.data(QtCore.Qt.UserRole + 1)
             users.append(obj)
+            user_names.append(obj.first_name)
 
         # Update database
         for user in users:
             self.database.remove_user_from_group(user.id, group.id)
 
         self.model_group_users.layoutChanged.emit()
+
+        message = f'Users {user_names} removed from {group.name}!'
+        self.statusbar.showMessage(message)
 
     # Expenses
     def create_expense(self):
@@ -1503,6 +1535,9 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         self.linExpenceName.clear()
         self.linExpenceAmount.clear()
 
+        message = f'Expense of ${expense_amount} {expense_name} for {group.name} created!'
+        self.statusbar.showMessage(message)
+
     # Payment
     def add_payment(self):
         """
@@ -1523,7 +1558,8 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         payment_tuple = [None, user_from.id, user_to.id, payment_amount, date, description]
         self.database.add_payment(payment_tuple)
 
-        print(f'Payment ${payment_amount} From {user_from.first_name} To {user_to.first_name} submitted!')
+        message = f'Payment ${payment_amount} From {user_from.first_name} To {user_to.first_name} submitted!'
+        self.statusbar.showMessage(message)
 
     # General
     def user_notification(self, group_users, expense_name, expense_amount, group_name):
@@ -1534,7 +1570,7 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         print(f'>> Sending expense notification...')
 
         # Authenticate
-        login = "****4@outlook.com"
+        login = "****@outlook.com"
         password = '****'
         session = smtplib.SMTP('smtp-mail.outlook.com', 587)
         session.starttls()
