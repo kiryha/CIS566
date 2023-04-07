@@ -1175,12 +1175,12 @@ class SplitSmart(QtWidgets.QMainWindow, ui_main.Ui_SplitSmart):
         cursor.execute('''CREATE TABLE "payment" (
                         id integer primary key autoincrement,
                         user_from_id integer,
-                        group_to_id integer,
+                        user_to_id integer,
                         amount real,
                         date text,
                         description text,
                         FOREIGN KEY(user_from_id) REFERENCES "user"(id),
-                        FOREIGN KEY(group_to_id) REFERENCES "user"(id)
+                        FOREIGN KEY(user_to_id) REFERENCES "user"(id)
                         )''')
 
         connection.commit()
