@@ -1,0 +1,1 @@
+"C:\Users\kko8\OneDrive\programs\book_asembler\Python310\python.exe" %cd%\split_smart.py
