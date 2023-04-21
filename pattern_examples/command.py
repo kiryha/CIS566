@@ -1,3 +1,11 @@
+"""
+The Command design pattern is a behavioral design pattern that turns a request into a stand-alone object that contains
+all information about the request. This transformation lets you pass requests as method arguments,
+delay or queue a request’s execution, and support undoable operations.
+The Command pattern is useful for implementing things like task queues, undo/redo functionality, or macro recording.
+"""
+
+
 # Command interface
 class Command:
     def execute(self):
