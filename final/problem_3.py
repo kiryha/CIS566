@@ -63,10 +63,15 @@ class Model:
     def __init__(self):
         self.houses = []
 
-    def add_house(self, house):
+    def add_house(self, price, address, city, zip_code, year_built, property_type, bedrooms):
+
+        house = House(price, address, city, zip_code, year_built, property_type, bedrooms)
         self.houses.append(house)
 
+        return house
+
     def update_house(self, index, house):
+
         self.houses[index] = house
 
     def search_houses(self, criteria):
@@ -95,12 +100,14 @@ class Model:
 # Views
 class View1:
     @staticmethod
-    def create_house(price, address, city, zip_code, year_built, property_type, bedrooms):
-        return House(price, address, city, zip_code, year_built, property_type, bedrooms)
+    def display_success(house):
 
-    @staticmethod
-    def display_success():
-        return "House information added successfully."
+        house_details = f"House of index {house.index} created!\n\n" \
+                        f"Price: ${house.price}\nAddress: {house.address}\nCity: {house.city}\n" \
+                        f"Zip: {house.zip_code}\nYear built: {house.year_built}\n" \
+                        f"Property type: {house.property_type}\nBedrooms: {house.bedrooms}"
+
+        return house_details
 
 
 class View2:
@@ -188,16 +195,16 @@ class Zillow(QtWidgets.QMainWindow, ui_zillow.Ui_Zillow):
         bedrooms = self.linBedrooms.text()
 
         # Create house
-        house = View1.create_house(price, address, city, zip_code, year_built, property_type, bedrooms)
-        self.model.add_house(house)
+        house = self.model.add_house(price, address, city, zip_code, year_built, property_type, bedrooms)
 
         # Display Data
-        message = View3.display_house_details(house)
+        message = View1.display_success(house)
         self.linResults.clear()
         self.linResults.append(message)
 
     def search_houses(self):
 
+        # Get Data
         price = self.linPrice.text() if self.linPrice.text() != '' else None
         city = self.linCity.text() if self.linCity.text() != '' else None
         zip_code = self.linZip.text() if self.linZip.text() != '' else None
@@ -205,10 +212,12 @@ class Zillow(QtWidgets.QMainWindow, ui_zillow.Ui_Zillow):
         property_type = self.linType.text() if self.linType.text() != '' else None
         bedrooms = self.linBedrooms.text() if self.linBedrooms.text() != '' else None
 
+        # Search houses
         criteria = View2.get_search_criteria(price, city, zip_code, year_built, property_type, bedrooms)
         filtered_houses = self.model.search_houses(criteria)
-        message = View2.display_search_results(filtered_houses)
 
+        # Display Data
+        message = View2.display_search_results(filtered_houses)
         self.linResults.clear()
         self.linResults.append(message)
 
