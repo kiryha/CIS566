@@ -96,23 +96,7 @@ class Model:
 
         return True
 
-
-# Views
-class View1:
-    @staticmethod
-    def display_success(house):
-
-        house_details = f"House of index {house.index} created!\n\n" \
-                        f"Price: ${house.price}\nAddress: {house.address}\nCity: {house.city}\n" \
-                        f"Zip: {house.zip_code}\nYear built: {house.year_built}\n" \
-                        f"Property type: {house.property_type}\nBedrooms: {house.bedrooms}"
-
-        return house_details
-
-
-class View2:
-    @staticmethod
-    def get_search_criteria(price_range, city, zip_code, year_built, property_type, bedrooms):
+    def get_search_criteria(self, price_range, city, zip_code, year_built, property_type, bedrooms):
         criteria = {}
 
         if price_range:
@@ -136,6 +120,21 @@ class View2:
 
         return criteria
 
+
+# Views
+class View1:
+    @staticmethod
+    def display_success(house):
+
+        house_details = f"House of index {house.index} created!\n\n" \
+                        f"Price: ${house.price}\nAddress: {house.address}\nCity: {house.city}\n" \
+                        f"Zip: {house.zip_code}\nYear built: {house.year_built}\n" \
+                        f"Property type: {house.property_type}\nBedrooms: {house.bedrooms}"
+
+        return house_details
+
+
+class View2:
     @staticmethod
     def display_search_results(houses):
 
@@ -166,6 +165,7 @@ class Zillow(QtWidgets.QMainWindow, ui_zillow.Ui_Zillow):
         super(Zillow, self).__init__(parent=parent)
         self.setupUi(self)
 
+        # Create Data Model
         self.model = Model()
 
         # UI Calls
@@ -213,7 +213,7 @@ class Zillow(QtWidgets.QMainWindow, ui_zillow.Ui_Zillow):
         bedrooms = self.linBedrooms.text() if self.linBedrooms.text() != '' else None
 
         # Search houses
-        criteria = View2.get_search_criteria(price, city, zip_code, year_built, property_type, bedrooms)
+        criteria = self.model.get_search_criteria(price, city, zip_code, year_built, property_type, bedrooms)
         filtered_houses = self.model.search_houses(criteria)
 
         # Display Data
