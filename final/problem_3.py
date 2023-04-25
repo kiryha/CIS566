@@ -32,7 +32,7 @@ function to support the following:
 """
 
 
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtWidgets
 from ui import ui_zillow
 
 # Database ID counter
